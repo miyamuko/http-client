@@ -1,0 +1,16 @@
+package: http-client
+version: 0.0.1
+
+sources:
+  include:
+    - site-lisp/http-client/**/*.l
+  exclude:
+    - site-lisp/http-client/**/test/*.l
+
+document:
+  - README.md
+
+files:
+  include:
+    - site-lisp/**/*.l
+    - site-lisp/**/*.lc

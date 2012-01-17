@@ -1,0 +1,8 @@
+2012-01-18  MIYAMUKO Katsuyuki
+
+	* とりあえず Node.js ほぼ互換 API を作成
+
+2012-01-17  MIYAMUKO Katsuyuki
+
+	* http-client 作成開始
+
