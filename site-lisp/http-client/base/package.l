@@ -29,25 +29,23 @@
   (require "ansify")
   (require "xl-alexandria")
   (require "xl-winhttp")
-  (require "http-client/base")
 
-  (unless (find-package :http-client.node)
-    (defpackage :http-client.node
+  (unless (find-package :http-client.base)
+    (defpackage :http-client.base
       (:use
        :lisp
        :editor
        :alexandria
-       :http-client.base
        )
       (:shadowing-import-from :lisp
        :copy-file
        :featurep
       )
       )
-    (ansify::install :http-client.node))
+    (ansify::install :http-client.base))
   )
 
 
-(provide "http-client/node/package")
+(provide "http-client/base/package")
 
 ;;; End

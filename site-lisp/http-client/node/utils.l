@@ -41,27 +41,6 @@
 (defun option-values (option-plist)
   (values-plist option-plist '(:host :hostname :port :method :path :headers :auth)))
 
-(defun values-plist (plist keys)
-  (values-list
-   (mapcar #'(lambda (k)
-               (getf plist k))
-           keys)))
-
-
-(defun parse-raw-headers (raw-headers)
-  (remove-if #'null (mapcar #'split-field (split-header raw-headers))))
-
-(defun split-header (raw-headers)
-  (when raw-headers
-    (split-string raw-headers #\NUL)))
-
-(defun split-field (header)
-  (when (and header (string-matchp "^\\([^:]+\\):\\(.+\\)$" header))
-    (cons (strip (match-string 1)) (strip (match-string 2)))))
-
-(defun strip (str)
-  (string-trim " \t\r\n\f" str))
-
 
 (provide "http-client/node/utils")
 

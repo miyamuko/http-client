@@ -26,7 +26,6 @@
 (in-package :user)
 
 (require "http-client/node/api")
-(require "http-client/node/version")
 
 (provide "http-client/node")
 

@@ -1,5 +1,7 @@
 2012-01-18  MIYAMUKO Katsuyuki
 
+	* 一般的なユーティリティを http-client/base に移動
+
 	* とりあえず Node.js ほぼ互換 API を作成
 
 2012-01-17  MIYAMUKO Katsuyuki

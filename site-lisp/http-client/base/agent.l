@@ -1,4 +1,4 @@
-; -*- mode: lisp; package: http-client; encoding: shift_jis -*-
+; -*- mode: lisp; package: http-client.base; encoding: shift_jis -*-
 
 ;; Copyright (c) 2012 MIYAMUKO Katsuyuki.
 ;;
@@ -24,20 +24,27 @@
 ;;; Code:
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (require "http-client/node/package")
+  (require "http-client/base/package")
   )
 
-(in-package :http-client)
+(in-package :http-client.base)
 
-(export '(http-client-version
+(export '(get-session-create
+          get-connection-create
           ))
 
-(defconstant +http-client-version+ "0.0.1")
+(defvar *session* (make-hash-table :test #'equalp))
 
-(defun http-client-version ()
-  +http-client-version+)
+(defun get-session-create (&rest args)
+  (or (gethash args *session*)
+      (setf (gethash args *session*)
+            (apply 'winhttp:open args))))
+
+(defun get-connection-create (&rest args)
+  ;; TODO connection pool
+  (apply 'winhttp:connect args))
 
 
-(provide "http-client/node/version")
+(provide "http-client/base/agent")
 
 ;;; End

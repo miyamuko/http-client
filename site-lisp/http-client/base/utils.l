@@ -1,7 +1,5 @@
-; -*- mode: lisp; package: user; encoding: shift_jis -*-
+; -*- mode: lisp; package: http-client.base; encoding: shift_jis -*-
 
-;;; http-client/package.l
-;;
 ;; Copyright (c) 2012 MIYAMUKO Katsuyuki.
 ;;
 ;; Permission is hereby granted, free of charge, to any person obtaining
@@ -26,28 +24,37 @@
 ;;; Code:
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (require "ansify")
-  (require "xl-alexandria")
-  (require "xl-winhttp")
-  (require "http-client/base")
-
-  (unless (find-package :http-client.node)
-    (defpackage :http-client.node
-      (:use
-       :lisp
-       :editor
-       :alexandria
-       :http-client.base
-       )
-      (:shadowing-import-from :lisp
-       :copy-file
-       :featurep
-      )
-      )
-    (ansify::install :http-client.node))
+  (require "http-client/base/package")
   )
 
+(in-package :http-client.base)
 
-(provide "http-client/node/package")
+(export '(values-plist
+          parse-raw-headers
+          ))
+
+(defun values-plist (plist keys)
+  (values-list
+   (mapcar #'(lambda (k)
+               (getf plist k))
+           keys)))
+
+
+(defun parse-raw-headers (raw-headers)
+  (remove-if #'null (mapcar #'split-field (split-header raw-headers))))
+
+(defun split-header (raw-headers)
+  (when raw-headers
+    (split-string raw-headers #\NUL)))
+
+(defun split-field (header)
+  (when (and header (string-matchp "^\\([^:]+\\):\\(.+\\)$" header))
+    (cons (strip (match-string 1)) (strip (match-string 2)))))
+
+(defun strip (str)
+  (string-trim " \t\r\n\f" str))
+
+
+(provide "http-client/base/utils")
 
 ;;; End

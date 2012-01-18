@@ -28,7 +28,6 @@
   (require "http-client/node/types")
   (require "http-client/node/utils")
   (require "http-client/node/events")
-  (require "http-client/node/agent")
   )
 
 (in-package :http-client.node)
@@ -69,8 +68,8 @@
 (defun http-request (option-plist &optional callback)
   (multiple-value-bind (host hostname port method path headers auth)
       (option-values option-plist)
-    (let* ((session (get-session :async t))
-           (connection (get-connection session (or hostname host) port))
+    (let* ((session (get-session-create :async t))
+           (connection (get-connection-create session (or hostname host) port))
            (request (winhttp:open-request connection method path :accept "*/*"))
            (context (make-context)))
       ;; header
