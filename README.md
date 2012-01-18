@@ -14,40 +14,43 @@
 (defpackage :your-app
   (:use
    :lisp :editor
-   :http-client.node))
+   :http-client.node ;; Node.js ほぼ互換パッケージ
+   ))
 
 (in-package :your-app)
 
-(defun http-download-async (url localfile)
+(defun http-download-async (url localfile callback)
   (let* ((opts (parse-url url))
          (req (http-get opts))
          (out (open localfile :direction :output :encoding :binary)))
-    (http-request-on-response
-     req #'(lambda (res)
-             (http-response-on-data
-              res #'(lambda (chunk)
-                      (princ chunk out)))
-             (http-response-on-end
-              res #'(lambda ()
-                      (close out)
-                      (setf out nil)
-                      (msgbox "ダウンロードが完了しました。~%~A~%~A" url localfile)))
-             (http-response-on-close
-              res #'(lambda ()
-                      (when out
-                        (close out)
-                        (msgbox "ダウンロードが失敗しました。~%~A~%~A" url localfile))))
-             ))
-    (http-request-on-error
-     req #'(lambda (err)
-             (when out
-               (close out))
-             (msgbox "エラーが発生しました。~%~A" err)))
-    (http-request-end req)))
+    (flet ((complete (err)
+             (close out)
+             (funcall callback url localfile err)))
+      (on :response req
+          #'(lambda (res)
+              (on :data res
+                  #'(lambda (chunk) (princ chunk out)))
+              (on :end res
+                  #'(lambda () (complete nil)))
+              (on :close res
+                  #'(lambda (err)
+                      (when err (complete err))))
+              ))
+      (on :error req
+          #'(lambda (err) (complete err)))
+      (http-request-end req)
+      req)))
 
-(http-download-async "http://www.google.co.jp/"
-                     "index.html")
-;=> t
+(http-download-async "http://www.jsdlab.co.jp/~kamei/cgi-bin/download.cgi"
+                     "xyzzy-0.2.2.235.lzh"
+                     #'(lambda (url localfile err)
+                         (if err
+                             (msgbox "ダウンロードが失敗しました。~%URL: ~A~%File: ~A~%Error: ~A"
+                                     url localfile err)
+                           (msgbox "ダウンロードが完了しました。~%URL: ~A~%File: ~A~%MD5: ~A"
+                                   url localfile
+                                   (with-open-file (s localfile :encoding :binary)
+                                     (si:md5 s))))))
 ```
 
 ### Gauche (rfc.http) ほぼ互換 API

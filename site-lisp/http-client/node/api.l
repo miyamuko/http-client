@@ -86,7 +86,8 @@
       (when callback
         (http-request-on-response request callback))
       ;; send request
-      (winhttp:send-request request)
+      (with-job-queue request
+        (winhttp:send-request request))
       request
       )))
 
@@ -132,6 +133,7 @@
     ((:send-request-complete req)
      (when-let (job (take-waiting-jobs ctx))
        (funcall job)))
+    ;; リクエストボディ送信
     ((:write-complete req n)
      (when-let (job (take-waiting-jobs ctx))
        (funcall job)))
@@ -152,16 +154,15 @@
     ((:read-complete req data n)
      (emit ctx :data data)
      (winhttp:query-data-available req))
-    ;; レスポンスボディ受信完了
-    ((:handle-closing req hinternet)
-     (emit ctx :close))
     ;; 送信エラー
     ((:request-error req type error)
      (winhttp:close-handle req)
      (emit ctx :error error))
+    ;; コールバック内でエラー
     ((:callback-error req error)
      (winhttp:close-handle req)
      (emit ctx :error error))
+    ;; Ctrl-g を押された
     ((:callback-quit req error)
      (winhttp:close-handle req)
      (emit ctx :error error))

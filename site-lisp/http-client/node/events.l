@@ -29,6 +29,9 @@
 
 (in-package :http-client.node)
 
+(export '(on
+          ))
+
 (defun job-queue (request proc)
   (let ((ctx (winhttp:request-context request)))
     (if (context-waiting-p ctx)
@@ -46,9 +49,9 @@
   (when-let (cb (getf (context-callbacks ctx) event))
     (apply cb args)))
 
-(defun on (request event callback)
-  (check-type request winhttp:request)
+(defun on (event request callback)
   (check-type event symbol)
+  (check-type request winhttp:request)
   (check-type callback winhttp::callable)
   (let* ((ctx (winhttp:request-context request))
          (callbacks (context-callbacks ctx)))
@@ -58,22 +61,22 @@
             (append callbacks (list event callback))))
     request))
 
-(defmacro define-event (type event)
-  (let ((func (symbolicate "http-" type "-on-" event)))
+(defmacro define-event (event)
+  (let ((func (symbolicate "on-" event)))
     `(progn
        (defun ,func (request callback)
          (on request ,event callback))
        (export ',func)
        )))
 
-(define-event :request :response)
-(define-event :request :upgrade)
-(define-event :request :continue)
-(define-event :request :error)
+(define-event :response)
+(define-event :upgrade)
+(define-event :continue)
+(define-event :error)
 
-(define-event :response :data)
-(define-event :response :end)
-(define-event :response :close)
+(define-event :data)
+(define-event :end)
+(define-event :close)
 
 
 (provide "http-client/node/events")
