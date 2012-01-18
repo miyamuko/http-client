@@ -1,4 +1,4 @@
-; -*- mode: lisp; package: user; encoding: shift_jis -*-
+; -*- mode: lisp; package: http-client.gauche; encoding: shift_jis -*-
 
 ;; Copyright (c) 2012 MIYAMUKO Katsuyuki.
 ;;
@@ -23,11 +23,36 @@
 
 ;;; Code:
 
-(in-package :user)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (require "http-client/gauche/package")
+  )
 
-(require "http-client/node")
-(require "http-client/gauche")
+(in-package :http-client.gauche)
 
-(provide "http-client")
+(defun parse-server (server &key secure)
+  (multiple-value-bind (scheme user pass host port path extra)
+      (winhttp:crack-url (format nil "~:[http~;https~]://~A" secure server))
+    (values host port)))
+
+(defun merge-header-alist (alist)
+  (loop with r
+    for (k . v) in alist
+    for k = (string-downcase k)
+    do (if (assoc k r :test #'equal)
+           (appendf (cdr (assoc k r :test #'equal)) (list v))
+         (push (list k v) r))
+    finally (return (nreverse r))))
+
+(defun make-default-sink ()
+  (make-string-output-stream))
+
+(defun make-default-flusher ()
+  #'(lambda (sink headers)
+      (unwind-protect
+          (get-output-stream-string sink)
+        (close sink))))
+
+
+(provide "http-client/gauche/utils")
 
 ;;; End

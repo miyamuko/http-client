@@ -1,5 +1,7 @@
 ; -*- mode: lisp; package: user; encoding: shift_jis -*-
 
+;;; http-client/package.l
+;;
 ;; Copyright (c) 2012 MIYAMUKO Katsuyuki.
 ;;
 ;; Permission is hereby granted, free of charge, to any person obtaining
@@ -23,11 +25,30 @@
 
 ;;; Code:
 
-(in-package :user)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (require "ansify")
+  (require "xl-alexandria")
+  (require "xl-winhttp")
+  (require "http-client/base")
 
-(require "http-client/node")
-(require "http-client/gauche")
+  (unless (find-package :http-client.gauche)
+    (defpackage :http-client.gauche
+      (:nicknames :rfc.http)
+      (:use
+       :lisp
+       :editor
+       :alexandria
+       :http-client.base
+       )
+      (:shadowing-import-from :lisp
+       :copy-file
+       :featurep
+       )
+      )
+    (ansify::install :http-client.gauche))
+  )
 
-(provide "http-client")
+
+(provide "http-client/gauche/package")
 
 ;;; End

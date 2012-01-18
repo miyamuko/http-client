@@ -25,9 +25,8 @@
 
 (in-package :user)
 
-(require "http-client/node")
-(require "http-client/gauche")
+(require "http-client/gauche/api")
 
-(provide "http-client")
+(provide "http-client/gauche")
 
 ;;; End
