@@ -37,10 +37,10 @@
 (defun merge-header-alist (alist)
   (loop with r
     for (k . v) in alist
-    for k = (string-downcase k)
-    do (if (assoc k r :test #'equal)
-           (appendf (cdr (assoc k r :test #'equal)) (list v))
-         (push (list k v) r))
+    for key = (string-downcase k)
+    do (if (assoc key r :test #'equal)
+           (appendf (cdr (assoc key r :test #'equal)) (list v))
+         (push (list key v) r))
     finally (return (nreverse r))))
 
 (defun make-default-sink ()
