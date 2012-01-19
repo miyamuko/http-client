@@ -63,13 +63,12 @@
 
 (defun http-request (server request-uri method
                             &rest headers
-                            &key request-encoding proxy body sink flusher no-redirect secure async
+                            &key request-encoding proxy body
+                            (sink (make-default-sink))
+                            (flusher (make-default-flusher))
+                            no-redirect secure async
                             &allow-other-keys)
   (remove-from-plistf headers :request-encoding :proxy :body :sink :flusher :no-redirect :secure :async)
-  (unless sink
-    (setf sink (make-default-sink)))
-  (unless flusher
-    (setf flusher (make-default-flusher)))
   (multiple-value-bind (host port)
       (parse-server server :secure secure)
     (let ((session (get-session-create :async async)))
@@ -79,7 +78,7 @@
           (when headers
             (winhttp:add-request-headers request headers))
           (unless (winhttp:query-request-header request :user-agent)
-            (winhttp:add-request-headers request `(:user-agent ,*http-user-agent*) :add-if-new))
+            (winhttp:add-request-headers request `(:user-agent ,*http-user-agent*)))
           ;; TODO async
           ;; TODO proxy
           ;; TODO no-redirect

@@ -1,7 +1,5 @@
 ; -*- mode: lisp; package: user; encoding: shift_jis -*-
 
-;;; http-client/package.l
-;;
 ;; Copyright (c) 2012 MIYAMUKO Katsuyuki.
 ;;
 ;; Permission is hereby granted, free of charge, to any person obtaining
@@ -27,6 +25,7 @@
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (require "ansify")
+  (require "ansi-loop")
   (require "xl-alexandria")
   (require "xl-winhttp")
   (require "http-client/base")
@@ -43,6 +42,10 @@
       (:shadowing-import-from :lisp
        :copy-file
        :featurep
+       )
+      (:shadowing-import-from :ansi-loop
+       :loop
+       :loop-finish
        )
       )
     (ansify::install :http-client.gauche))
