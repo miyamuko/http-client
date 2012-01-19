@@ -1,3 +1,16 @@
+2012-01-19  MIYAMUKO Katsuyuki
+
+	* Gauche 互換 API をさらにちょこっと作成
+	- http-compose-query
+	- proxy, no-redirect 対応
+
+	(http-get "www.google.co.jp"
+	          '("/search" (q "xyzzy 読み方") (num 20) (ie "utf-8") (oe "shift_jis"))
+	          :request-encoding *encoding-utf8n*)
+	(http-compose-query "/search"
+	                    '((q "xyzzy 読み方") (num 20) (ie "utf-8") (oe "shift_jis"))
+	                    *encoding-utf8n*)
+
 2012-01-18  MIYAMUKO Katsuyuki
 
 	* Gauche 互換 API をちょこっと作成

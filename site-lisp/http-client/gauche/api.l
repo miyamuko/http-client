@@ -26,6 +26,7 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (require "http-client/gauche/package")
   (require "http-client/gauche/utils")
+  (require "http-client/gauche/types")
   )
 
 (in-package :http-client.gauche)
@@ -68,21 +69,28 @@
                             (flusher (make-default-flusher))
                             no-redirect secure async
                             &allow-other-keys)
+  (check-type server string)
+  (check-type request-uri (or string list))
+  (check-type method (or string symbol))
+  (check-type sink (or output-stream null))
   (remove-from-plistf headers :request-encoding :proxy :body :sink :flusher :no-redirect :secure :async)
   (multiple-value-bind (host port)
       (parse-server server :secure secure)
     (let ((session (get-session-create :async async)))
       (winhttp:with-connect (connection session host port)
-        (winhttp:with-open-request (request connection method request-uri :secure secure)
+        (winhttp:with-open-request (request connection method
+                                            (compose-query request-uri request-encoding)
+                                            :secure secure)
           ;; header
           (when headers
             (winhttp:add-request-headers request headers))
           (unless (winhttp:query-request-header request :user-agent)
             (winhttp:add-request-headers request `(:user-agent ,*http-user-agent*)))
+          (when proxy
+            (winhttp:set-option request :proxy :proxy-name proxy :access-type :named-proxy))
+          ;; デフォルトは :disallow-https-to-http
+          (winhttp:set-option request :redirect-policy (if no-redirect :never :always))
           ;; TODO async
-          ;; TODO proxy
-          ;; TODO no-redirect
-          ;; TODO request-encoding (body request-uri)
           ;; TODO body (write-data)
           ;; send request
           (winhttp:send-request request :data body)
@@ -98,11 +106,12 @@
                           (parse-raw-headers (winhttp:query-response-header request :raw-headers)))))
             (values (winhttp:query-response-header request :status-code)
                     headers
-                    (funcall flusher sink headers)
+                    (when flusher
+                      (funcall flusher sink headers))
                     )))))))
 
 (defun http-compose-query (path params &optional encoding)
-  )
+  (compose-query (cons path params) encoding))
 
 (defun http-compose-form-data (params port &optional encoding)
   )

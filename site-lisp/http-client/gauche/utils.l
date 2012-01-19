@@ -29,6 +29,9 @@
 
 (in-package :http-client.gauche)
 
+(defparameter *default-literal-chars* "0-9A-Za-z._~-")
+
+
 (defun parse-server (server &key secure)
   (multiple-value-bind (scheme user pass host port path extra)
       (winhttp:crack-url (format nil "~:[http~;https~]://~A" secure server))
@@ -51,6 +54,60 @@
       (unwind-protect
           (get-output-stream-string sink)
         (close sink))))
+
+(defun compose-query (path-and-params encoding)
+  (etypecase path-and-params
+    (string path-and-params)
+    (list
+     (add-query-params (car path-and-params) (cdr path-and-params)
+                       :encoding encoding))))
+
+;; from xml-http-request/util.l
+
+(defun add-query-params (uri query &key encoding literal-chars)
+  (add-query-string uri (url-encode-params query encoding literal-chars)))
+
+(defun add-query-string (uri query-string)
+  (if (or (not query-string) (string= query-string ""))
+      uri
+    (format nil "~A~A~A"
+            uri
+            (cond ((member (char uri (1- (length uri))) '(#\? #\&)) "")
+                  ((find #\? uri) "&")
+                  (t "?"))
+            query-string)))
+
+(defun url-encode-params (data &optional encoding literal-chars)
+  (etypecase data
+    (null nil)
+    (string data)
+    (list
+     (format nil "~{~A~^&~}"
+             (mapcar #'(lambda (e)
+                         (url-encode-key-value e encoding literal-chars))
+                     (remove-if #'null data))))
+    ))
+
+(defun url-encode-key-value (data &optional encoding literal-chars)
+  (etypecase data
+    (null nil)
+    (string data)
+    (list
+     (format nil "~A~^=~A"
+             (url-encode-value (car data) encoding literal-chars)
+             (url-encode-value (cadr data) encoding literal-chars)
+             ))))
+
+(defun url-encode-value (v &optional encoding literal-chars)
+  (let ((v (typecase v
+             (string v)
+             (null "")
+             (t (format nil "~A" v))))
+        (literal-chars (or literal-chars *default-literal-chars*)))
+    (si:www-url-encode (if encoding
+                           (convert-encoding-from-internal encoding v)
+                         v)
+                       nil literal-chars)))
 
 
 (provide "http-client/gauche/utils")
