@@ -25,8 +25,8 @@
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (require "http-client/gauche/package")
-  (require "http-client/gauche/utils")
-  (require "http-client/gauche/types")
+  (require "http-client/gauche/request-sync")
+  (require "http-client/gauche/request-async")
   )
 
 (in-package :http-client.gauche)
@@ -44,8 +44,6 @@
           http-secure-connection-available?
           ))
 
-(defvar *http-user-agent* (format nil "xyzzy.http/~A" (software-version)))
-
 (defun http-get (server request-uri &rest headers &key request-encoding proxy sink flusher no-redirect secure async &allow-other-keys)
   (apply 'http-request server request-uri "GET" headers))
 
@@ -53,68 +51,32 @@
   (apply 'http-request server request-uri "HEAD" headers))
 
 (defun http-post (server request-uri body &rest headers &key request-encoding proxy sink flusher no-redirect secure async &allow-other-keys)
-  (apply 'http-request server request-uri "POST" headers))
+  (apply 'http-request server request-uri "POST" :body body headers))
 
 (defun http-put (server request-uri body &rest headers &key request-encoding proxy sink flusher secure async &allow-other-keys)
-  (apply 'http-request server request-uri "PUT" headers))
+  (apply 'http-request server request-uri "PUT" :body body headers))
 
 (defun http-delete (server request-uri &rest headers &key request-encoding proxy sink flusher secure async &allow-other-keys)
   (apply 'http-request server request-uri "DELETE" headers))
 
+(defun http-request (server request-uri method &rest headers &key request-encoding proxy body sink flusher no-redirect secure async &allow-other-keys)
+  (apply (if async 'http-request-async 'http-request-sync) server request-uri method headers))
 
-(defun http-request (server request-uri method
-                            &rest headers
-                            &key request-encoding proxy body
-                            (sink (make-default-sink))
-                            (flusher (make-default-flusher))
-                            no-redirect secure async
-                            &allow-other-keys)
-  (check-type server string)
-  (check-type request-uri (or string list))
-  (check-type method (or string symbol))
-  (check-type sink (or output-stream null))
-  (remove-from-plistf headers :request-encoding :proxy :body :sink :flusher :no-redirect :secure :async)
-  (multiple-value-bind (host port)
-      (parse-server server :secure secure)
-    (let ((session (get-session-create :async async)))
-      (winhttp:with-connect (connection session host port)
-        (winhttp:with-open-request (request connection method
-                                            (compose-query request-uri request-encoding)
-                                            :secure secure)
-          ;; header
-          (when headers
-            (winhttp:add-request-headers request headers))
-          (unless (winhttp:query-request-header request :user-agent)
-            (winhttp:add-request-headers request `(:user-agent ,*http-user-agent*)))
-          (when proxy
-            (winhttp:set-option request :proxy :proxy-name proxy :access-type :named-proxy))
-          ;; デフォルトは :disallow-https-to-http
-          (winhttp:set-option request :redirect-policy (if no-redirect :never :always))
-          ;; TODO async
-          ;; TODO body (write-data)
-          ;; send request
-          (winhttp:send-request request :data body)
-          ;; receive response
-          (winhttp:receive-response request)
-          (loop
-            (let ((n (winhttp:query-data-available request)))
-              (when (<= n 0)
-                (return))
-              (let ((chunk (winhttp:read-data request n)))
-                (princ chunk sink))))
-          (let ((headers (merge-header-alist
-                          (parse-raw-headers (winhttp:query-response-header request :raw-headers)))))
-            (values (winhttp:query-response-header request :status-code)
-                    headers
-                    (when flusher
-                      (funcall flusher sink headers))
-                    )))))))
 
 (defun http-compose-query (path params &optional encoding)
   (compose-query (cons path params) encoding))
 
 (defun http-compose-form-data (params port &optional encoding)
-  )
+  (check-type port (or output-stream null))
+  (let* ((boundary (make-boundary))
+         (form-data (build-multipart/form-data params encoding boundary)))
+    (values (cond (port
+                   (write-multipart/form-data (rcurry 'princ port) form-data)
+                   port)
+                  (t
+                   (with-output-to-string (s)
+                     (write-multipart/form-data (rcurry 'princ s) form-data))))
+            boundary)))
 
 (defun http-secure-connection-available? ()
   t)

@@ -1,3 +1,10 @@
+2012-01-20  MIYAMUKO Katsuyuki
+
+	* (http-post, http-put, http-compose-form-data): form-data に対応
+	(http-put "localhost:3000" "/upload"
+	          '(("upload" :file "logo.png" :content-type "image/png")))
+	content-transfer-encoding は binary のみサポート
+
 2012-01-19  MIYAMUKO Katsuyuki
 
 	* Gauche 互換 API をさらにちょこっと作成

@@ -30,7 +30,8 @@
 (in-package :http-client.gauche)
 
 (deftype output-stream ()
-  `(satisfies output-stream-p))
+  `(satisfies (lambda (v)
+                (and v (output-stream-p v)))))
 
 
 (provide "http-client/gauche/types")
