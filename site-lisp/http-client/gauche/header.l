@@ -57,39 +57,15 @@
     (flet ((h (fmt &rest args)
              (push (apply 'format nil fmt args) r)))
       (h "Content-Disposition: form-data; name=\"~A\"~@[; filename=\"~A\"~]" name filename)
-      (h "Content-Type: ~A" content-type)
-      (h "Content-Transfer-Encoding: ~A" content-transfer-encoding)
+      (when content-type
+        (h "Content-Type: ~A" content-type))
+      (when content-transfer-encoding
+        (h "Content-Transfer-Encoding: ~A" content-transfer-encoding))
       (doplist (k v header-plist)
         (when (and k v)
           (h "~A: ~A" k v))))
     (format nil "~{~A\r\n~}\r\n" (nreverse r))
     ))
-
-(defun encoding->charset (encoding)
-  (when (equal encoding *encoding-utf8n*)
-    (setf encoding *encoding-utf8*))
-  (cadr (assoc encoding *character-set-alist* :test #'equal :key #'symbol-value)))
-
-(defun make-boundary (&optional (len 60))
-  ;; ランダムな文字列を base64 してboundary を生成する。
-  ;; base64 はサイズが 4/3 倍になるので、len * 3/4 が
-  ;; 生成するランダムな文字列のサイズ。
-  ;;
-  ;; 参考
-  ;;   http://suika.fam.cx/~wakaba/wiki/sw/n/boundary
-  ;;   http://tools.ietf.org/html/rfc3548
-  ;;   http://tools.ietf.org/html/rfc2046
-  (let* ((bytes (ceiling (* len (/ 3 4.0))))
-         (bin (make-random-string bytes))
-         (base64 (si:base64-encode bin))
-         (r (substitute-string base64 "[=\n]" "")))
-    (substring r 0 (min len (length r)))))
-
-(defun make-random-string (&optional (size 16))
-  (let (r)
-    (dotimes (i size)
-      (push (random 256) r))
-    (map 'string 'code-char (nreverse r))))
 
 
 (provide "http-client/gauche/header")

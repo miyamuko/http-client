@@ -1,5 +1,16 @@
 2012-01-20  MIYAMUKO Katsuyuki
 
+	* multipart/form-data 周りを修正
+	- ファイルの中身を全部送信していなかったのを修正
+	- (("key1" "value1") ("key2" :value "value2")) がエラーになっていたのを修正
+	- ファイルの存在チェックをするようにした
+	- boundary に記号を含めないようにした
+	  - 記号ありだとエラーになるアップローダがあった
+	- Content-Transfer-Encoding と Content-Type は指定された場合のみ
+	  生成するようにした
+	  - Content-Transfer-Encoding: binary を付けるとファイルにゴミが入る
+	    アップローダがあった
+
 	* (http-post, http-put, http-compose-form-data): form-data に対応
 	(http-put "localhost:3000" "/upload"
 	          '(("upload" :file "logo.png" :content-type "image/png")))

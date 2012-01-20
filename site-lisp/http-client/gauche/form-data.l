@@ -41,28 +41,37 @@
     (dolist (param body)
       (destructuring-bind (name &rest value-plist)
           param
-        (let ((keys '(:value :file :content-type :content-transfer-encoding)))
-          (destructuring-bind (value file content-type content-transfer-encoding)
-              (mapcar #'(lambda (k) (getf value-plist k)) keys)
-            (setf value-plist (apply 'remove-from-plist value-plist keys))
-            (add-data "--~A\r\n" boundary)
-            (funcall (if file
-                         'build-multipart/form-data-file
-                       'build-multipart/form-data-value)
-                     name (or file value) request-encoding
-                     content-type content-transfer-encoding value-plist)
-            (add-data "\r\n")
-            ))
+        (add-data "--~A\r\n" boundary)
+        (if (= 1 (length value-plist))
+            (build-multipart/form-data-value name (car value-plist) request-encoding nil nil nil)
+          (let ((keys '(:value :file :content-type :content-transfer-encoding)))
+            (destructuring-bind (value file content-type content-transfer-encoding)
+                (mapcar #'(lambda (k) (getf value-plist k)) keys)
+              (setf value-plist (apply 'remove-from-plist value-plist keys))
+              (funcall (if file
+                           'build-multipart/form-data-file
+                         'build-multipart/form-data-value)
+                       name (or file value) request-encoding
+                       content-type content-transfer-encoding value-plist))))
+        (add-data "\r\n")
         ))
     (add-data "--~A--\r\n" boundary)
     (nreverse *result*)))
 
-(defun build-multipart/form-data-file (name file request-encoding
+(defun build-multipart/form-data-file (name filename request-encoding
                                             content-type content-transfer-encoding header-plist)
-  (let* ((filename (file-namestring file))
-         (headers (format-form-data-header name (encode filename request-encoding)
-                                           (or content-type "application/octet-stream")
-                                           (or content-transfer-encoding "binary")
+  (setq file (namestring filename))
+  (when (special-file-p filename)
+    (error "~aはデバイスファイルです" filename))
+  (when (file-directory-p filename)
+    (error "~aはディレクトリです" filename))
+  (unless (and (valid-path-p filename)
+               (file-exist-p filename))
+    (error "~a\nファイルまたはディレクトリが見つかりません" filename))
+  (let* ((basename (file-namestring file))
+         (headers (format-form-data-header name (encode basename request-encoding)
+                                           content-type
+                                           content-transfer-encoding
                                            header-plist)))
     (add-data headers)
     (add-file file)))
@@ -70,9 +79,8 @@
 (defun build-multipart/form-data-value (name value request-encoding
                                              content-type content-transfer-encoding header-plist)
   (let ((headers (format-form-data-header name nil
-                                          (or content-type (format nil "text/plain~@[; charset=~A~]"
-                                                                   (encoding->charset request-encoding)))
-                                          (or content-transfer-encoding "binary")
+                                          content-type
+                                          content-transfer-encoding
                                           header-plist)))
     (add-data "~A~A" headers (encode value request-encoding))))
 
@@ -85,8 +93,8 @@
             (t
              (let ((buf (make-vector 8192 :element-type 'character :fill-pointer 0)))
                (with-open-file (f file :direction :input :encoding :binary)
-                 (read-into buf f)
-                 (funcall writer buf)))
+                 (while (read-into buf f nil nil)
+                   (funcall writer buf))))
              )))))
 
 (defun calc-multipart/form-data-size (form-data)
@@ -95,6 +103,17 @@
           form-data
           :initial-value 0
           ))
+
+(defun make-boundary (&optional (len 50))
+  ;; 参考
+  ;;   http://suika.fam.cx/~wakaba/wiki/sw/n/boundary
+  ;;   http://tools.ietf.org/html/rfc3548
+  ;;   http://tools.ietf.org/html/rfc2046
+  (let ((r nil)
+        (prefix "boundary-"))
+    (dotimes (i (- len (length prefix)))
+      (push (random 36) r))
+    (format nil "~A~{~36,R~}" prefix r)))
 
 
 (defun add-data (fmt &rest args)
