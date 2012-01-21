@@ -33,7 +33,7 @@
 
 (in-package :http-client.gauche)
 
-(defun http-request-async (server request-uri method
+(defun http-request-async (method server request-uri
                                   &rest headers
                                   &key request-encoding proxy body
                                   (sink (make-default-sink))

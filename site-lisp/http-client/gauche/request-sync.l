@@ -34,7 +34,7 @@
 
 (in-package :http-client.gauche)
 
-(defun http-request-sync (server request-uri method
+(defun http-request-sync (method server request-uri
                                  &rest headers
                                  &key request-encoding proxy body
                                  (sink (make-default-sink))

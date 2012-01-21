@@ -45,8 +45,8 @@
         (if (= 1 (length value-plist))
             (build-multipart/form-data-value name (car value-plist) request-encoding nil nil nil)
           (let ((keys '(:value :file :content-type :content-transfer-encoding)))
-            (destructuring-bind (value file content-type content-transfer-encoding)
-                (mapcar #'(lambda (k) (getf value-plist k)) keys)
+            (multiple-value-bind (value file content-type content-transfer-encoding)
+                (values-plist value-plist keys)
               (setf value-plist (apply 'remove-from-plist value-plist keys))
               (funcall (if file
                            'build-multipart/form-data-file
@@ -86,8 +86,8 @@
 
 (defun write-multipart/form-data (writer form-data)
   (dolist (form form-data)
-    (let ((file (getf form :file))
-          (data (getf form :data)))
+    (multiple-value-bind (file data)
+        (values-plist form '(:file :data))
       (cond (data
              (funcall writer data))
             (t
@@ -105,8 +105,8 @@
       (write-multipart/form-data-async writer rest))))
 
 (defun write-multipart/form-data-async1 (writer form)
-  (let ((file (getf form :file))
-        (data (getf form :data)))
+  (multiple-value-bind (file data)
+      (values-plist form '(:file :data))
     (cond (data
            (funcall writer data)
            t)
@@ -121,7 +121,7 @@
                    (t
                     (close file)
                     nil))))
-           )))
+          )))
 
 (defun calc-multipart/form-data-size (form-data)
   (reduce #'(lambda (acc form)
