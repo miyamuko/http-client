@@ -45,7 +45,7 @@
   (check-type request-uri (or string list))
   (check-type method (or string symbol))
   (check-type sink (or output-stream null))
-  (remove-from-plistf headers :request-encoding :proxy :body :sink :flusher :no-redirect :secure :async)
+  (remove-from-plistf headers :request-encoding :proxy :body :sink :flusher :no-redirect :secure :async :oncomplete :onerror)
   (multiple-value-bind (host port)
       (parse-server server :secure secure)
     (let ((session (get-session-create :async async)))
@@ -62,7 +62,9 @@
 
 (defun send-request (request body request-encoding)
   (check-type body (or string list))
-  (cond ((multipart-form-data-p body)
+  (cond ((null body)
+         (winhttp:send-request request))
+        ((multipart-form-data-p body)
          (let* ((boundary (make-boundary))
                 (form-data (build-multipart/form-data body request-encoding boundary))
                 (total-length (calc-multipart/form-data-size form-data)))
@@ -86,13 +88,6 @@
        (let ((chunk (winhttp:read-data request n)))
          (princ chunk sink)))
      (do-events))))
-
-(defun finish-response (request sink flusher)
-  (values (winhttp:query-response-header request :status-code)
-          (query-response-header-alist request)
-          (when flusher
-            (funcall flusher sink headers))
-          ))
 
 
 (provide "http-client/gauche/request-sync")

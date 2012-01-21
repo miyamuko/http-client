@@ -32,6 +32,7 @@
 (export '(values-plist
           parse-raw-headers
           encode
+          errbox
           ))
 
 (defun values-plist (plist keys)
@@ -62,6 +63,9 @@
      (if encoding
          (convert-encoding-from-internal encoding v)
        v))))
+
+(defun errbox (fmt &rest args)
+  (message-box (apply #'format nil fmt args) nil '(:ok :exclamation)))
 
 
 (provide "http-client/base/utils")

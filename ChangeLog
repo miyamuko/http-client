@@ -1,3 +1,7 @@
+2012-01-21  MIYAMUKO Katsuyuki
+
+	* Gauche 互換 API で非同期処理を追加
+
 2012-01-20  MIYAMUKO Katsuyuki
 
 	* multipart/form-data 周りを修正

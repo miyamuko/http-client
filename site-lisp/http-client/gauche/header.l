@@ -48,9 +48,15 @@
     finally (return (nreverse r))))
 
 (defun add-content-type-header (request &key urlencoded form-data boundary)
+  (add-default-header request :content-type
+                      (content-type-header-value :urlencoded urlencoded
+                                                 :form-data form-data
+                                                 :boundary boundary)))
+
+(defun content-type-header-value (&key urlencoded form-data boundary)
   (if urlencoded
-      (add-default-header request :content-type *content-type-form-urlencoded*)
-    (add-default-header request :content-type (concat *content-type-form-data* boundary))))
+      *content-type-form-urlencoded*
+    (concat *content-type-form-data* boundary)))
 
 (defun add-default-header (request header value)
   (unless (winhttp:query-request-header request header)

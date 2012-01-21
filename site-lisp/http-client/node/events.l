@@ -69,6 +69,7 @@
        (export ',func)
        )))
 
+(define-event :send)
 (define-event :response)
 (define-event :upgrade)
 (define-event :continue)

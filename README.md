@@ -55,7 +55,49 @@
 
 ### Gauche (rfc.http) ほぼ互換 API
 
-TODO
+```lisp
+(require "http-client")
+
+(defpackage :your-app2
+  (:use
+   :lisp :editor
+   :http-client.gauche ;; Gauche (rfc.http) ほぼ互換パッケージ
+   ))
+
+(in-package :your-app2)
+
+(defun http-download-async (url localfile callback)
+  (multiple-value-bind (scheme _ _ host port path extra)
+      (winhttp:crack-url url)
+    (let ((out (open localfile :direction :output :encoding :binary))
+          (total 0))
+      (http-get (format nil "~A:~A" host port)
+                `(,path ,extra)
+                :sink (make-general-output-stream
+                       #'(lambda (chunk)
+                           (incf total (length chunk))
+                           (message "Download ~:D bytes" total)
+                           (princ chunk out)))
+                :flusher #'(lambda (sink headers)
+                             (close out))
+                :async t
+                :oncomplete #'(lambda (status headers _)
+                                (funcall callback url localfile nil))
+                :onerror #'(lambda (err)
+                             (funcall callback url localfile err))
+                ))))
+
+(http-download-async "http://www.jsdlab.co.jp/~kamei/cgi-bin/download.cgi"
+                     "xyzzy-0.2.2.235.lzh"
+                     #'(lambda (url localfile err)
+                         (if err
+                             (msgbox "ダウンロードが失敗しました。~%URL: ~A~%File: ~A~%Error: ~A"
+                                     url localfile err)
+                           (msgbox "ダウンロードが完了しました。~%URL: ~A~%File: ~A~%MD5: ~A"
+                                   url localfile
+                                   (with-open-file (s localfile :encoding :binary)
+                                     (si:md5 s))))))
+```
 
 
 ## DESCRIPTION
@@ -89,7 +131,14 @@ http-client は xl-winhttp をラップし利用しやすい API を提供しま
 ## TODO
 
 * リファレンス
-* Gauche (rfc.http) ほぼ互換 API の実装
+* content-transfer-encoding で binary 以外の対応
+* 非同期処理で進捗状況のコールバック
+* content-length を見てダウンロードの最適化
+  - 今はデータを受信するたびにコールバックを細かく呼び出しているが
+    WinHTTP のバッファサイズ単位で受信するようにする
+* メモリ使用量削減
+  - 受信バッファ用 chunk の再利用
+* chunked アップロードに対応
 
 
 ## KNOWN BUGS

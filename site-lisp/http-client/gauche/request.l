@@ -67,6 +67,14 @@
                  (< 2 (length param)))
              body)))
 
+(defun finish-response (request sink flusher)
+  (let ((headers (query-response-header-alist request)))
+    (values (winhttp:query-response-header request :status-code)
+            headers
+            (when flusher
+              (funcall flusher sink headers))
+            )))
+
 
 (provide "http-client/gauche/request")
 

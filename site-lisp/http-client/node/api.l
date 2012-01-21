@@ -130,10 +130,12 @@
        ))
     ;; リクエストヘッダ送信完了
     ((:send-request-complete req)
+     (emit ctx :send nil)
      (when-let (job (take-waiting-jobs ctx))
        (funcall job)))
     ;; リクエストボディ送信
     ((:write-complete req n)
+     (emit ctx :send n)
      (when-let (job (take-waiting-jobs ctx))
        (funcall job)))
     ;; レスポンスヘッダ受信完了

@@ -97,6 +97,32 @@
                    (funcall writer buf))))
              )))))
 
+(defun write-multipart/form-data-async (writer form-data)
+  (destructuring-bind (form-data &rest rest)
+      form-data
+    (if (write-multipart/form-data-async1 writer form-data)
+        rest
+      (write-multipart/form-data-async writer rest))))
+
+(defun write-multipart/form-data-async1 (writer form)
+  (let ((file (getf form :file))
+        (data (getf form :data)))
+    (cond (data
+           (funcall writer data)
+           t)
+          (t
+           (let ((buf (make-vector 8192 :element-type 'character :fill-pointer 0)))
+             (when (stringp file)
+               (setf file (open file :direction :input :encoding :binary))
+               (setf (getf form :file) file))
+             (cond ((read-into buf file nil nil)
+                    (funcall writer buf)
+                    t)
+                   (t
+                    (close file)
+                    nil))))
+           )))
+
 (defun calc-multipart/form-data-size (form-data)
   (reduce #'(lambda (acc form)
               (incf acc (getf form :size)))

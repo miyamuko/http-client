@@ -44,23 +44,53 @@
           http-secure-connection-available?
           ))
 
-(defun http-get (server request-uri &rest headers &key request-encoding proxy sink flusher no-redirect secure async &allow-other-keys)
+(defun http-get (server request-uri &rest headers &key
+                        request-encoding proxy
+                        sink flusher no-redirect
+                        secure async
+                        oncomplete onerror
+                        &allow-other-keys)
   (apply 'http-request server request-uri "GET" headers))
 
-(defun http-head (server request-uri &rest headers &key request-encoding proxy no-redirect secure async &allow-other-keys)
+(defun http-head (server request-uri &rest headers &key
+                         request-encoding proxy no-redirect
+                         secure async
+                         oncomplete onerror
+                         &allow-other-keys)
   (apply 'http-request server request-uri "HEAD" headers))
 
-(defun http-post (server request-uri body &rest headers &key request-encoding proxy sink flusher no-redirect secure async &allow-other-keys)
+(defun http-post (server request-uri body &rest headers &key
+                         request-encoding proxy
+                         sink flusher no-redirect
+                         secure async
+                         oncomplete onerror
+                         &allow-other-keys)
   (apply 'http-request server request-uri "POST" :body body headers))
 
-(defun http-put (server request-uri body &rest headers &key request-encoding proxy sink flusher secure async &allow-other-keys)
+(defun http-put (server request-uri body &rest headers &key
+                        request-encoding proxy
+                        sink flusher
+                        secure async
+                        oncomplete onerror
+                        &allow-other-keys)
   (apply 'http-request server request-uri "PUT" :body body headers))
 
-(defun http-delete (server request-uri &rest headers &key request-encoding proxy sink flusher secure async &allow-other-keys)
+(defun http-delete (server request-uri &rest headers &key
+                           request-encoding proxy
+                           sink flusher
+                           secure async
+                           oncomplete onerror
+                           &allow-other-keys)
   (apply 'http-request server request-uri "DELETE" headers))
 
-(defun http-request (server request-uri method &rest headers &key request-encoding proxy body sink flusher no-redirect secure async &allow-other-keys)
-  (apply (if async 'http-request-async 'http-request-sync) server request-uri method headers))
+(defun http-request (server request-uri method &rest headers &key
+                            request-encoding proxy body
+                            sink flusher no-redirect
+                            secure async
+                            oncomplete onerror
+                            &allow-other-keys)
+  (apply (if async 'http-request-async 'http-request-sync)
+         server request-uri method headers))
 
 
 (defun http-compose-query (path params &optional encoding)

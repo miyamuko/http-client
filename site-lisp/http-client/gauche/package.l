@@ -29,6 +29,7 @@
   (require "xl-alexandria")
   (require "xl-winhttp")
   (require "http-client/base")
+  (require "http-client/node")
 
   (unless (find-package :http-client.gauche)
     (defpackage :http-client.gauche
@@ -46,6 +47,9 @@
       (:shadowing-import-from :ansi-loop
        :loop
        :loop-finish
+       )
+      (:shadowing-import-from :http-client.node
+       :on
        )
       )
     (ansify::install :http-client.gauche))
