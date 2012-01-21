@@ -178,10 +178,7 @@
 (defun http-request-write (request chunk &optional (encoding *encoding-utf8n*))
   (with-job-queue request
    (winhttp:write-data (winhttp-request request)
-                       (if (and chunk encoding
-                                (not (equal encoding *encoding-sjis*)))
-                           (ed::convert-encoding-from-internal encoding chunk)
-                         chunk))))
+                       (encode chunk encoding))))
 
 (defun http-request-end (request &optional data (encoding *encoding-utf8n*))
   (when data

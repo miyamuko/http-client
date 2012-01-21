@@ -89,14 +89,6 @@
     (si:www-url-encode (encode v encoding)
                        nil literal-chars)))
 
-(defun encode (v encoding)
-  (typecase v
-    (null "")
-    (string
-     (if encoding
-         (convert-encoding-from-internal encoding v)
-       v))))
-
 
 (provide "http-client/gauche/url")
 

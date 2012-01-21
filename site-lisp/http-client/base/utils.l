@@ -31,6 +31,7 @@
 
 (export '(values-plist
           parse-raw-headers
+          encode
           ))
 
 (defun values-plist (plist keys)
@@ -53,6 +54,14 @@
 
 (defun strip (str)
   (string-trim " \t\r\n\f" str))
+
+(defun encode (v encoding)
+  (typecase v
+    (null "")
+    (string
+     (if encoding
+         (convert-encoding-from-internal encoding v)
+       v))))
 
 
 (provide "http-client/base/utils")
