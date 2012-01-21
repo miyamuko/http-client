@@ -34,6 +34,10 @@
 (defparameter *content-type-form-data* "multipart/form-data; boundary=")
 (defparameter *default-content-type* "application/octet-stream")
 
+(defun query-response-header-alist (request)
+  (merge-header-alist
+   (parse-raw-headers (winhttp:query-response-header request :raw-headers))))
+
 (defun merge-header-alist (alist)
   (loop with r
     for (k . v) in alist

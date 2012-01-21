@@ -88,13 +88,11 @@
      (do-events))))
 
 (defun finish-response (request sink flusher)
-  (let ((headers (merge-header-alist
-                  (parse-raw-headers (winhttp:query-response-header request :raw-headers)))))
-    (values (winhttp:query-response-header request :status-code)
-            headers
-            (when flusher
-              (funcall flusher sink headers))
-            )))
+  (values (winhttp:query-response-header request :status-code)
+          (query-response-header-alist request)
+          (when flusher
+            (funcall flusher sink headers))
+          ))
 
 
 (provide "http-client/gauche/request-sync")
