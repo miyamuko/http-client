@@ -74,7 +74,7 @@
            (context (make-context)))
       ;; header
       (when headers
-        (winhttp:add-request-headers req headers))
+        (winhttp:add-request-headers request headers))
       (when auth
         (multiple-value-bind (auth-scheme user pass)
             (parse-auth auth)
@@ -83,7 +83,7 @@
       (setf (winhttp:request-context request) context)
       (winhttp:set-status-callback request 'request-callback)
       (when callback
-        (http-request-on-response request callback))
+        (on :response request callback))
       ;; send request
       (with-job-queue request
         (winhttp:send-request request))
@@ -177,8 +177,7 @@
 
 (defun http-request-write (request chunk &optional (encoding *encoding-utf8n*))
   (with-job-queue request
-   (winhttp:write-data (winhttp-request request)
-                       (encode chunk encoding))))
+   (winhttp:write-data request (encode chunk encoding))))
 
 (defun http-request-end (request &optional data (encoding *encoding-utf8n*))
   (when data
