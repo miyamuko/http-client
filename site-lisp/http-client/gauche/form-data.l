@@ -117,10 +117,17 @@
 
 
 (defun add-data (fmt &rest args)
-  (let ((data (if args
-                  (apply 'format nil fmt args)
-                fmt)))
-    (push (list :data data :size (string-byte-size data)) *result*)))
+  (let* ((data (if args
+                   (apply 'format nil fmt args)
+                 fmt))
+         (size (string-byte-size data)))
+    (or (when-let (head (car *result*))
+          (multiple-value-bind (curr-data curr-size)
+              (values-plist head '(:data :size))
+            (when curr-data
+              (setf (getf head :data) (concat curr-data data)
+                    (getf head :size) (+ curr-size size)))))
+        (push (list :data data :size size) *result*))))
 
 (defun add-file (file)
   (push (list :file file :size (file-length file)) *result*))
