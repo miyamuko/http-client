@@ -32,13 +32,28 @@
 (defparameter *default-literal-chars* "0-9A-Za-z._~-")
 
 
-(defun parse-server (server &key secure)
-  (multiple-value-bind (scheme user pass host port path extra secure-p)
-      (winhttp:crack-url (format nil "~:[http~;https~]://~A" secure server))
-    (values host port)))
+(defun create-url (server request-uri &key encoding secure)
+  (let (scheme path params)
+    (etypecase request-uri
+      (null nil)
+      (string
+       (setf path request-uri))
+      (list
+       (setf path (car request-uri)
+             params (cdr request-uri))))
+    ;; server Ç… http://localhost Ç»Ç«ÇéwíËÇµÇΩèÍçá
+    (when (string-match "\\`\\([a-z]+\\)://\\([^/]+\\)\\(.*\\)\\'" server)
+      (setf scheme (match-string 1)
+            server (match-string 2)
+            path (concat path (match-string 3))
+            ))
+    (winhttp:create-url scheme nil nil server nil
+                        (add-query-params path params :encoding encoding)
+                        nil secure)))
 
 (defun compose-query (path-and-params encoding)
   (etypecase path-and-params
+    (null nil)
     (string path-and-params)
     (list
      (add-query-params (car path-and-params) (cdr path-and-params)
@@ -50,11 +65,12 @@
   (add-query-string uri (url-encode-params query encoding literal-chars)))
 
 (defun add-query-string (uri query-string)
-  (if (or (not query-string) (string= query-string ""))
+  (if (emptyp query-string)
       uri
     (format nil "~A~A~A"
-            uri
-            (cond ((member (char uri (1- (length uri))) '(#\? #\&)) "")
+            (or uri "")
+            (cond ((emptyp uri) "?")
+                  ((member (char uri (1- (length uri))) '(#\? #\&)) "")
                   ((find #\? uri) "&")
                   (t "?"))
             query-string)))

@@ -49,10 +49,9 @@
   (check-type method (or string symbol))
   (check-type sink (or output-stream null))
   (remove-from-plistf headers :request-encoding :proxy :body :sink :flusher :no-redirect :secure :async :oncomplete :onerror)
-  (let ((opts (http-client.node:parse-url (winhttp:create-url nil nil nil
-                                                              server nil
-                                                              (compose-query request-uri request-encoding)
-                                                              nil secure))))
+  (let ((opts (http-client.node:parse-url (create-url server request-uri
+                                                      :encoding request-encoding
+                                                      :secure secure))))
     (multiple-value-bind (content-type form-data multipart-p)
         (build-form-data body request-encoding)
       (when content-type

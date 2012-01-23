@@ -1,5 +1,12 @@
 2012-01-23  MIYAMUKO Katsuyuki
 
+	* (http-*): server に完全な URL を指定可能にした (Gauche 非互換)
+	- 以下の 4 つはすべて同じである
+	(http-get "https://www.google.co.jp/search?q=xyzzy" nil)
+	(http-get "https://www.google.co.jp/search" '(nil (q "xyzzy")))
+	(http-get "https://www.google.co.jp" '("/search" (q "xyzzy")))
+	(http-get "www.google.co.jp" '("/search" (q "xyzzy")) :secure t)
+
 	* レスポンスに Content-Length があれば、バッファサイズ分一気に読み込むことで
 	イベントの発生回数を減らして高速化
 

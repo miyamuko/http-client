@@ -67,25 +67,22 @@
 (in-package :your-app2)
 
 (defun http-download-async (url localfile callback)
-  (multiple-value-bind (scheme _ _ host port path extra)
-      (winhttp:crack-url url)
-    (let ((out (open localfile :direction :output :encoding :binary))
-          (total 0))
-      (http-get (format nil "~A:~A" host port)
-                `(,path ,extra)
-                :sink (make-general-output-stream
-                       #'(lambda (chunk)
-                           (incf total (length chunk))
-                           (message "Download ~:D bytes" total)
-                           (princ chunk out)))
-                :flusher #'(lambda (sink headers)
-                             (close out))
-                :async t
-                :oncomplete #'(lambda (status headers _)
-                                (funcall callback url localfile nil))
-                :onerror #'(lambda (err)
-                             (funcall callback url localfile err))
-                ))))
+  (let ((out (open localfile :direction :output :encoding :binary))
+        (total 0))
+    (http-get url nil
+              :sink (make-general-output-stream
+                     #'(lambda (chunk)
+                         (incf total (length chunk))
+                         (message "Download ~:D bytes" total)
+                         (princ chunk out)))
+              :flusher #'(lambda (sink headers)
+                           (close out))
+              :async t
+              :oncomplete #'(lambda (status headers _)
+                              (funcall callback url localfile nil))
+              :onerror #'(lambda (err)
+                           (funcall callback url localfile err))
+              )))
 
 (http-download-async "http://www.jsdlab.co.jp/~kamei/cgi-bin/download.cgi"
                      "xyzzy-0.2.2.235.lzh"

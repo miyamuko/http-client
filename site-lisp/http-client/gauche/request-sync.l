@@ -46,13 +46,13 @@
   (check-type method (or string symbol))
   (check-type sink (or output-stream null))
   (remove-from-plistf headers :request-encoding :proxy :body :sink :flusher :no-redirect :secure :async :oncomplete :onerror)
-  (multiple-value-bind (host port)
-      (parse-server server :secure secure)
+  (multiple-value-bind (scheme _ _ host port path extra secure)
+      (winhttp:crack-url (create-url server request-uri
+                                     :encoding request-encoding
+                                     :secure secure))
     (let ((session (get-session-create :async async)))
       (winhttp:with-connect (connection session host port)
-        (winhttp:with-open-request (request connection method
-                                            (compose-query request-uri request-encoding)
-                                            :secure secure)
+        (winhttp:with-open-request (request connection method `(,path ,extra) :secure secure)
           (setup-headers request headers)
           (setup-options request proxy no-redirect)
           (send-request request body request-encoding)
