@@ -125,6 +125,11 @@ http-client は xl-winhttp をラップし利用しやすい API を提供しま
    必要な時点で require してください。
 
 
+## REFERENCE
+
+* [Gauche (rfc.http) ほぼ互換 API](references/http-client.gauche.md)
+
+
 ## TODO
 
 * リファレンス

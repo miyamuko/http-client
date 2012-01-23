@@ -1,5 +1,9 @@
 2012-01-23  MIYAMUKO Katsuyuki
 
+	* (reference/http-client.gauche.md): Gauche 互換 API のリファレンスを追加
+	半分ぐらい Gauche のリファレンスのコピペです m(__)m
+	http://practical-scheme.net/gauche/man/gauche-refj_146.html
+
 	* (http-request): 任意の HTTP メソッドを送れるように Export (Gauche 非互換)
 
 	* (http-*): server に完全な URL を指定可能にした (Gauche 非互換)
