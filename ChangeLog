@@ -1,5 +1,7 @@
 2012-01-23  MIYAMUKO Katsuyuki
 
+	* (http-request): 任意の HTTP メソッドを送れるように Export (Gauche 非互換)
+
 	* (http-*): server に完全な URL を指定可能にした (Gauche 非互換)
 	- 以下の 4 つはすべて同じである
 	(http-get "https://www.google.co.jp/search?q=xyzzy" nil)

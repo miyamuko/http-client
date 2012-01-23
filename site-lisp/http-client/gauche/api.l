@@ -38,6 +38,7 @@
           http-post
           http-put
           http-delete
+          http-request
 
           http-compose-query
           http-compose-form-data
