@@ -52,7 +52,9 @@
                                      :secure secure))
     (let ((session (get-session-create :async async)))
       (winhttp:with-connect (connection session host port)
-        (winhttp:with-open-request (request connection method `(,path ,extra) :secure secure)
+        (winhttp:with-open-request (request connection method `(,path ,extra)
+                                            :accept "*/*"
+                                            :secure secure)
           (setup-headers request headers)
           (setup-options request proxy no-redirect)
           (send-request request body request-encoding)

@@ -70,7 +70,9 @@
       (option-values option-plist)
     (let* ((session (get-session-create :async t))
            (connection (get-connection-create session (or hostname host) port))
-           (request (winhttp:open-request connection method path :accept "*/*"))
+           (request (winhttp:open-request connection method path
+                                          :accept "*/*"
+                                          :secure secure))
            (context (make-context)))
       ;; header
       (when headers
