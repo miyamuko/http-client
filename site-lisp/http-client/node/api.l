@@ -140,8 +140,10 @@
        (funcall job)))
     ;; レスポンスヘッダ受信完了
     ((:headers-available req)
+     (let ((content-length (winhttp:query-response-header req :content-length :type :number)))
+       (setf (context-max-read-length ctx) content-length))
      (emit ctx :response req)
-     (winhttp:query-data-available req))
+     (read-data req ctx))
     ;; レスポンスボディ受信チェック
     ((:data-available req n)
      (cond ((<= n 0)
@@ -153,8 +155,9 @@
             (winhttp:read-data req n))))
     ;; レスポンスボディ受信
     ((:read-complete req data n)
+     (incf (context-total-read-length ctx) n)
      (emit ctx :data data)
-     (winhttp:query-data-available req))
+     (read-data req ctx))
     ;; 送信エラー
     ((:request-error req type error)
      (winhttp:close-handle req)
@@ -169,6 +172,25 @@
      (emit ctx :error error))
     ))
 
+(defun read-data (req ctx)
+  (let ((max-read-length (context-max-read-length ctx))
+        (total-read-length (context-total-read-length ctx)))
+    (cond ((null max-read-length)
+           ;; content-length が分からないなら到着している分だけ読み込む。
+           (winhttp:query-data-available req))
+          (t
+           ;; content-length が分かっているなら、バッファサイズ分を
+           ;; 一気に読み込むことでイベントの発生回数を減らす。
+           (let ((n (min winhttp:+default-read-buffer-size+
+                         (- max-read-length total-read-length))))
+             (cond ((<= n 0)
+                    ;; EOF reached
+                    (emit ctx :end)
+                    (winhttp:close-handle req))
+                   (t
+                    (winhttp:read-data req n))
+                   )))
+          )))
 
 (defun http-request-abort (request)
   (let ((ctx (winhttp:request-context request)))

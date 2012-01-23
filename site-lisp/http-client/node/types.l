@@ -36,6 +36,8 @@
   (waiting-jobs nil)
   (paused-events nil)
   (last-event nil)
+  (max-read-length nil)
+  (total-read-length 0)
   (callbacks nil)
   )
 

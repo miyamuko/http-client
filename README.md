@@ -133,9 +133,6 @@ http-client は xl-winhttp をラップし利用しやすい API を提供しま
 * リファレンス
 * content-transfer-encoding で binary 以外の対応
 * 非同期処理で進捗状況のコールバック
-* content-length を見てダウンロードの最適化
-  - 今はデータを受信するたびにコールバックを細かく呼び出しているが
-    WinHTTP のバッファサイズ単位で受信するようにする
 * メモリ使用量削減
   - 受信バッファ用 chunk の再利用
 * chunked アップロードに対応
