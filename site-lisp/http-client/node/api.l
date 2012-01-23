@@ -51,14 +51,14 @@
           ))
 
 (defun parse-url (url)
-  (multiple-value-bind (scheme user pass host port path extra)
+  (multiple-value-bind (scheme user pass host port path extra secure-p)
       (winhttp:crack-url url)
     `(:hostname ,host
       :port ,port
       :path ,(format nil "~A~A" (or path "/") (or extra ""))
       :auth ,(when (and user pass)
                (format nil "~A:~A" user pass))
-      :secure ,(string-equal "https" scheme)
+      :secure ,secure-p
       )))
 
 (defun http-get (option-plist &optional callback)

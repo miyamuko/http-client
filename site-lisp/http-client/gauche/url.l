@@ -33,7 +33,7 @@
 
 
 (defun parse-server (server &key secure)
-  (multiple-value-bind (scheme user pass host port path extra)
+  (multiple-value-bind (scheme user pass host port path extra secure-p)
       (winhttp:crack-url (format nil "~:[http~;https~]://~A" secure server))
     (values host port)))
 
