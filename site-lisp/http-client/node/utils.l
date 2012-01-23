@@ -39,7 +39,7 @@
     ))
 
 (defun option-values (option-plist)
-  (values-plist option-plist '(:host :hostname :port :method :path :headers :auth)))
+  (values-plist option-plist '(:host :hostname :port :method :path :headers :auth :secure)))
 
 
 (provide "http-client/node/utils")

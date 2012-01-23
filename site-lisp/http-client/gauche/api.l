@@ -51,14 +51,14 @@
                         secure async
                         oncomplete onerror
                         &allow-other-keys)
-  (apply 'http-request "GET" server request-uri headers))
+  (apply 'http-request "GET" server request-uri nil headers))
 
 (defun http-head (server request-uri &rest headers &key
                          request-encoding proxy no-redirect
                          secure async
                          oncomplete onerror
                          &allow-other-keys)
-  (apply 'http-request "HEAD" server request-uri headers))
+  (apply 'http-request "HEAD" server request-uri nil headers))
 
 (defun http-post (server request-uri body &rest headers &key
                          request-encoding proxy
@@ -66,7 +66,7 @@
                          secure async
                          oncomplete onerror
                          &allow-other-keys)
-  (apply 'http-request "POST" server request-uri :body body headers))
+  (apply 'http-request "POST" server request-uri body headers))
 
 (defun http-put (server request-uri body &rest headers &key
                         request-encoding proxy
@@ -74,7 +74,7 @@
                         secure async
                         oncomplete onerror
                         &allow-other-keys)
-  (apply 'http-request "PUT" server request-uri :body body headers))
+  (apply 'http-request "PUT" server request-uri body headers))
 
 (defun http-delete (server request-uri &rest headers &key
                            request-encoding proxy
@@ -82,16 +82,16 @@
                            secure async
                            oncomplete onerror
                            &allow-other-keys)
-  (apply 'http-request "DELETE" server request-uri headers))
+  (apply 'http-request "DELETE" server request-uri nil headers))
 
-(defun http-request (method server request-uri &rest headers &key
-                            request-encoding proxy body
+(defun http-request (method server request-uri body &rest headers &key
+                            request-encoding proxy
                             sink flusher no-redirect
                             secure async
                             oncomplete onerror
                             &allow-other-keys)
   (apply (if async 'http-request-async 'http-request-sync)
-         method server request-uri headers))
+         method server request-uri body headers))
 
 
 (defun http-compose-query (path params &optional encoding)

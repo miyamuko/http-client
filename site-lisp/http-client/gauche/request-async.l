@@ -33,9 +33,9 @@
 
 (in-package :http-client.gauche)
 
-(defun http-request-async (method server request-uri
+(defun http-request-async (method server request-uri body
                                   &rest headers
-                                  &key request-encoding proxy body
+                                  &key request-encoding proxy
                                   (sink (make-default-sink))
                                   (flusher (make-default-flusher))
                                   no-redirect secure async
@@ -48,7 +48,7 @@
   (check-type request-uri (or string list))
   (check-type method (or string symbol))
   (check-type sink (or output-stream null))
-  (remove-from-plistf headers :request-encoding :proxy :body :sink :flusher :no-redirect :secure :async :oncomplete :onerror)
+  (remove-from-plistf headers :request-encoding :proxy :sink :flusher :no-redirect :secure :async :oncomplete :onerror)
   (let ((opts (http-client.node:parse-url (create-url server request-uri
                                                       :encoding request-encoding
                                                       :secure secure))))

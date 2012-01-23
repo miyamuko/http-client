@@ -66,7 +66,7 @@
   (http-request option-plist callback))
 
 (defun http-request (option-plist &optional callback)
-  (multiple-value-bind (host hostname port method path headers auth)
+  (multiple-value-bind (host hostname port method path headers auth secure)
       (option-values option-plist)
     (let* ((session (get-session-create :async t))
            (connection (get-connection-create session (or hostname host) port))
