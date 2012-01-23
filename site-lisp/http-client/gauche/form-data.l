@@ -91,7 +91,7 @@
       (cond (data
              (funcall writer data))
             (t
-             (let ((buf (make-vector 8192 :element-type 'character :fill-pointer 0)))
+             (let ((buf (make-write-buffer)))
                (with-open-file (f file :direction :input :encoding :binary)
                  (while (read-into buf f nil nil)
                    (funcall writer buf))))
@@ -111,7 +111,7 @@
            (funcall writer data)
            t)
           (t
-           (let ((buf (make-vector 8192 :element-type 'character :fill-pointer 0)))
+           (let ((buf (make-write-buffer)))
              (when (stringp file)
                (setf file (open file :direction :input :encoding :binary))
                (setf (getf form :file) file))
@@ -122,6 +122,9 @@
                     (close file)
                     nil))))
           )))
+
+(defun make-write-buffer (&optional (size winhttp:+default-write-buffer-size+))
+  (make-vector size :element-type 'character :fill-pointer 0))
 
 (defun calc-multipart/form-data-size (form-data)
   (reduce #'(lambda (acc form)
