@@ -127,7 +127,7 @@ http-client は xl-winhttp をラップし利用しやすい API を提供しま
 
 ## REFERENCE
 
-* [Gauche (rfc.http) ほぼ互換 API](references/http-client.gauche.md)
+* references/ 配下を見てください。
 
 
 ## TODO
