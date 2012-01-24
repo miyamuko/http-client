@@ -1,0 +1,65 @@
+; -*- mode: lisp; package: http-client.test.api-http-get; encoding: shift_jis -*-
+
+;; Copyright (c) 2012 MIYAMUKO Katsuyuki.
+;;
+;; Permission is hereby granted, free of charge, to any person obtaining
+;; a copy of this software and associated documentation files (the
+;; "Software"), to deal in the Software without restriction, including
+;; without limitation the rights to use, copy, modify, merge, publish,
+;; distribute, sublicense, and/or sell copies of the Software, and to
+;; permit persons to whom the Software is furnished to do so, subject to
+;; the following conditions:
+;;
+;; The above copyright notice and this permission notice shall be
+;; included in all copies or substantial portions of the Software.
+;;
+;; THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+;; EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+;; MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+;; NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+;; LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+;; OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+;; WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+;;; Code:
+
+(require "lisp-unit")
+
+(require "json")
+(require "http-client")
+(require "http-client/test/helper")
+
+(defpackage :http-client.test.api-http-get
+  (:use :lisp :editor
+   :lisp-unit
+   :json
+   :http-client
+   :http-client.test.helper
+   )
+  )
+
+(in-package :http-client.test.api-http-get)
+
+(remove-all-tests :http-client.test.api-http-get)
+
+(define-test http-client/api-http-user-agent/get
+  (multiple-value-bind (status headers body)
+      (let ((*http-user-agent* "hoge"))
+        (http-get "localhost:3000" "/snoop"))
+    (let ((json (json-decode body)))
+      (assert-equal "hoge"
+          ($ json "headers" "user-agent"))
+      )
+    )
+  )
+
+(define-test http-client/api-http-user-agent/post
+  (multiple-value-bind (status headers body)
+      (http-post "localhost:3000" "/snoop" nil
+                 :User-Agent "fuga")
+    (let ((json (json-decode body)))
+      (assert-equal "fuga"
+          ($ json "headers" "user-agent"))
+      )
+    )
+  )
