@@ -79,9 +79,27 @@ http-client は xl-winhttp をラップし利用しやすい API を提供しま
 
 ## TODO
 
-* リファレンス
+* 非同期処理のコードを整理
+* 非同期処理時に :no-redirect や :proxy を無視しているのを修正
+* :accept */* は Accept ヘッダが指定されていない場合のみ設定する
+  - `*default-accept-header*`
+* 非同期処理完了時に request と connection の close
+* http-error
+  - winhttp-condition をラップする
+* API 追加
+  - http-abort
+    - 非同期処理を中断
+  - http-request-aborted-p
+    - 非同期処理が中断したかどうか
+  - http-request-completed-p
+    - 非同期処理が完了したかどうか
+* イベント追加?
+  - onabort
+  - onresponse
+    - レスポンスヘッダを受信した時点で呼び出す
+  - onprogress (type send-or-write-length content-length)
+    - 進捗状況のコールバック
 * content-transfer-encoding で binary 以外の対応
-* 非同期処理で進捗状況のコールバック
 * メモリ使用量削減
   - 受信バッファ用 chunk の再利用
 * chunked アップロードに対応
