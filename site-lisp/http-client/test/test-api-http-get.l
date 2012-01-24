@@ -111,6 +111,18 @@
         ($ headers "Location")))
   )
 
+(define-test http-client/api-http-get/async-no-redirect
+  (let (status headers body)
+    (http-get "localhost:3000" "/redirect?url=http://localhost:3000/snoop&status=302"
+              :no-redirect t :async t
+              :oncomplete #'(lambda (s h b)
+                              (setf status s headers h body h)))
+    (sleep-for 1)
+    (assert-equal "302" status)
+    (assert-equal '("http://localhost:3000/snoop")
+        ($ headers "Location")))
+  )
+
 (define-test http-client/api-http-get/sink
   (let* ((sink-chunks nil)
          (sink-abort-p nil)
@@ -187,7 +199,7 @@
               :onerror #'(lambda (&rest args)
                            (setf onerror-called-p t
                                  onerror-args args)))
-    (sleep-for 1)
+    (sleep-for 1.5)
     (assert-equal nil onerror-called-p)
     (assert-equal nil onerror-args)
     (assert-equal t oncomplete-called-p)
