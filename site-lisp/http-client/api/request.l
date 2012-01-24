@@ -68,6 +68,7 @@
              body)))
 
 (defun finish-response (request sink flusher)
+  (finish-output sink)
   (let ((headers (query-response-header-alist request)))
     (values (winhttp:query-response-header request :status-code)
             headers

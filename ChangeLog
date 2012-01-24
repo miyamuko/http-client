@@ -1,5 +1,8 @@
 2012-01-24  MIYAMUKO Katsuyuki
 
+	* (finish-output): flusher を呼ぶ前に sink に対して
+	finish-output を呼ぶようにした
+
 	* Content-Length が間違っているとブロックしてしまうので、
 	レスポンスヘッダの Content-Length を見るのをやめた
 
