@@ -1,4 +1,4 @@
-; -*- mode: lisp; package: http-client.gauche; encoding: shift_jis -*-
+; -*- mode: lisp; package: http-client.api; encoding: shift_jis -*-
 
 ;; Copyright (c) 2012 MIYAMUKO Katsuyuki.
 ;;
@@ -24,14 +24,14 @@
 ;;; Code:
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (require "http-client/gauche/package")
-  (require "http-client/gauche/request")
-  (require "http-client/gauche/header")
-  (require "http-client/gauche/types")
-  (require "http-client/gauche/url")
+  (require "http-client/api/package")
+  (require "http-client/api/request")
+  (require "http-client/api/header")
+  (require "http-client/api/types")
+  (require "http-client/api/url")
   )
 
-(in-package :http-client.gauche)
+(in-package :http-client.api)
 
 (defun http-request-async (method server request-uri body
                                   &rest headers
@@ -49,9 +49,9 @@
   (check-type method (or string symbol))
   (check-type sink (or output-stream null))
   (remove-from-plistf headers :request-encoding :proxy :sink :flusher :no-redirect :secure :async :oncomplete :onerror)
-  (let ((opts (http-client.node:parse-url (create-url server request-uri
-                                                      :encoding request-encoding
-                                                      :secure secure))))
+  (let ((opts (http-client.async:parse-url (create-url server request-uri
+                                                       :encoding request-encoding
+                                                       :secure secure))))
     (multiple-value-bind (content-type form-data multipart-p)
         (build-form-data body request-encoding)
       (when content-type
@@ -60,7 +60,7 @@
                                         ))))
       (setf opts (append opts `(:method ,method
                                 :headers ,headers)))
-      (let ((req (http-client.node:http-request opts)))
+      (let ((req (http-client.async:http-request opts)))
         (on :response req
             #'(lambda (res)
                 (on :data res
@@ -79,11 +79,12 @@
             #'(lambda (n)
                 (cond ((and multipart-p form-data)
                        (setf form-data
-                             (write-multipart/form-data-async #'(lambda (chunk)
-                                                                  (http-client.node:http-request-write req chunk nil))
-                                                              form-data)))
+                             (write-multipart/form-data-async
+                              #'(lambda (chunk)
+                                  (http-client.async:http-request-write req chunk nil))
+                              form-data)))
                       (t
-                       (http-client.node:http-request-end req form-data nil)))))
+                       (http-client.async:http-request-end req form-data nil)))))
         (on :error req
             #'(lambda (err)
                 (funcall onerror err)))
@@ -108,6 +109,6 @@
          )))
 
 
-(provide "http-client/gauche/request-async")
+(provide "http-client/api/request-async")
 
 ;;; End

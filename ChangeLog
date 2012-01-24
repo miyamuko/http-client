@@ -1,3 +1,12 @@
+2012-01-24  MIYAMUKO Katsuyuki
+
+	* パッケージ名を変更
+	- http-client.gauche => http-client.api
+	- http-client.node => http-client.async
+	- http-client.api でほとんどのユースケースに対応できると思うので
+	  http-client.async は非公開の API とした
+	  (リファレンスを書くのが面倒だからとかじゃないです!)
+
 2012-01-23  MIYAMUKO Katsuyuki
 
 	* (reference/http-client.gauche.md): Gauche 互換 API のリファレンスを追加

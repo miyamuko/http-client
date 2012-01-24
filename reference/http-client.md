@@ -1,7 +1,7 @@
-# http-client.gauche API Reference
+# http-client API Reference
 
   * [PACKAGES](#packages)
-    * [http-client.gauche](#http-client.gauche)
+    * [http-client.api](#http-client.api)
   * [VARIABLES](#variables)
     * [\*http-user-agent\*](#*http-user-agent*)
   * [FUNCTIONS](#functions)
@@ -19,7 +19,7 @@
 
 ## <a name="packages">PACKAGES</a>
 
-### Package: <a name="http-client.gauche"><em>http-client.gauche</em></a>
+### Package: <a name="http-client.api"><em>http-client.api</em></a>
 
 このパッケージは、[RFC2616 "Hypertext Transfer Protocol - HTTP/1.1"](http://tools.ietf.org/html/rfc2616)
 で定義されている HTTP/1.1 に対する簡単なクライアント API を提供します。
@@ -41,6 +41,7 @@ Gauche の rfc.http モジュールとの非互換は以下のとおりです。
 パッケージのニックネームは以下のとおりです。
 
   * `rfc.http`
+  * `http-client`
 
 
 ----
@@ -194,9 +195,9 @@ HTTP DELETE リクエストを送信します。
     `SERVER` にスキーマが指定された場合はスキーマの指定が優先されます。
 
     ```lisp
-    http-client.gauche> (http-get "https://www.google.co.jp"
-                                  '("/search" (q "xyzzy"))
-                                  :secure nil :async t)
+    http-client.api> (http-get "https://www.google.co.jp"
+                               '("/search" (q "xyzzy"))
+                               :secure nil :async t)
     #S(xl-winhttp.api:request description "GET /search?q=xyzzy with secure" ...)
     ```
 
@@ -221,11 +222,11 @@ HTTP DELETE リクエストを送信します。
     メッセージ・ボディを直接ファイルに保存します。
 
     ```lisp
-    http-client.gauche> (with-open-file (out "page.html" :direction :output :encoding :binary)
-                          (http-get "www.schemers.org" "/"
-                                    :sink out
-                                    :flusher #'(lambda (sink headers)
-                                                 (file-length sink))))
+    http-client.api> (with-open-file (out "page.html" :direction :output :encoding :binary)
+                       (http-get "www.schemers.org" "/"
+                                 :sink out
+                                 :flusher #'(lambda (sink headers)
+                                              (file-length sink))))
     "200" ;
     (("date" "Mon, 23 Jan 2012 07:10:21 GMT")
      ("server" "Apache/2.2.9 (Debian) mod_ssl/2.2.9 OpenSSL/0.9.8g")
@@ -237,12 +238,12 @@ HTTP DELETE リクエストを送信します。
     `sink` に general-output-stream を指定します。
 
     ```lisp
-    http-client.gauche> (http-get "www.schemers.org"
-                                  "/"
-                                  :sink (make-general-output-stream
-                                         #'(lambda (chunk)
-                                             (msgbox "~A" chunk)))
-                                  :flusher nil)
+    http-client.api> (http-get "www.schemers.org"
+                               "/"
+                               :sink (make-general-output-stream
+                                      #'(lambda (chunk)
+                                          (msgbox "~A" chunk)))
+                               :flusher nil)
     "200" ;
     (("date" "Mon, 23 Jan 2012 07:10:21 GMT")
      ("server" "Apache/2.2.9 (Debian) mod_ssl/2.2.9 OpenSSL/0.9.8g")
@@ -265,18 +266,18 @@ HTTP DELETE リクエストを送信します。
       引数はコンディションです。
 
     ```lisp
-    http-client.gauche> (http-get "www.schemers.org" "/"
-                                  :sink (make-buffer-stream
-                                         (get-buffer-create "*http-get*"))
-                                  :flusher nil
-                                  :async t
-                                  :oncomplete #'(lambda (status-code headers result)
-                                                  (pop-to-buffer "*http-get*")
-                                                  (html+-mode)
-                                                  (refresh-screen))
-                                  :onerror #'(lambda (err)
-                                               (msgbox "Error: ~A" err))
-                                  )
+    http-client.api> (http-get "www.schemers.org" "/"
+                               :sink (make-buffer-stream
+                                      (get-buffer-create "*http-get*"))
+                               :flusher nil
+                               :async t
+                               :oncomplete #'(lambda (status-code headers result)
+                                               (pop-to-buffer "*http-get*")
+                                               (html+-mode)
+                                               (refresh-screen))
+                               :onerror #'(lambda (err)
+                                            (msgbox "Error: ~A" err))
+                               )
     #S(xl-winhttp.api:request description "GET /" ...)
     ```
 
@@ -286,8 +287,8 @@ HTTP DELETE リクエストを送信します。
     他のヘッダ・フィールドを追加するためにキーワード引数を与えることができます。
 
     ```lisp
-    http-client.gauche> (http-get "twitter.com" "/"
-                                  :accept-language "en")
+    http-client.api> (http-get "twitter.com" "/"
+                               :accept-language "en")
     ```
 
 #### 戻り値
@@ -323,17 +324,17 @@ HTTP DELETE リクエストを送信します。
     url エンコーディングを行う必要があります。
 
 ```lisp
-http-client.gauche> (http-compose-query "/search"
-                                        '((q "xyzzy 読み方") (num 30)))
+http-client.api> (http-compose-query "/search"
+                                     '((q "xyzzy 読み方") (num 30)))
 "/search?q=xyzzy%20%93%C7%82%DD%95%FB&num=30"
 
-http-client.gauche> (http-compose-query "/search"
-                                        '((q "xyzzy 読み方") (num 30))
-                                        *encoding-utf8n*)
+http-client.api> (http-compose-query "/search"
+                                     '((q "xyzzy 読み方") (num 30))
+                                     *encoding-utf8n*)
 "/search?q=xyzzy%20%E8%AA%AD%E3%81%BF%E6%96%B9&num=30"
 
-http-client.gauche> (http-compose-query "/search"
-                                        "q=xyzzy%20%93%C7%82%DD%95%FB&num=30")
+http-client.api> (http-compose-query "/search"
+                                     "q=xyzzy%20%93%C7%82%DD%95%FB&num=30")
 "/search?q=xyzzy%20%93%C7%82%DD%95%FB&num=30"
 ```
 
@@ -346,11 +347,11 @@ http-client.gauche> (http-compose-query "/search"
   * `PORT` に nil を指定した場合はリクエストと boundary 文字列を多値で返します。
 
 ```lisp
-http-client.gauche> (setf body '((q "xyzzy 読み方") (num 50)))
+http-client.api> (setf body '((q "xyzzy 読み方") (num 50)))
 ((q "xyzzy 読み方") (num 50))
 
-http-client.gauche> (http-compose-form-data
-                     body nil)
+http-client.api> (http-compose-form-data
+                  body nil)
 "--boundary-7hcecyuy0h20wigl8hrrn0jior89i24vtfrifjebd
 Content-Disposition: form-data; name=\"q\"
 
@@ -363,10 +364,10 @@ nil
 " ;
 "boundary-7hcecyuy0h20wigl8hrrn0jior89i24vtfrifjebd"
 
-http-client.gauche> (http-compose-form-data
-                     body
-                     (make-buffer-stream
-                      (get-buffer-create "*form*")))
+http-client.api> (http-compose-form-data
+                  body
+                  (make-buffer-stream
+                   (get-buffer-create "*form*")))
 #<buffer stream 79566604> ;
 "boundary-23vt3uiri0nrp4ftwbnwnuiajo4bvl6r2jcixdyv0"
 ```

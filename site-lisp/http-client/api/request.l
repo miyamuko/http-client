@@ -1,4 +1,4 @@
-; -*- mode: lisp; package: http-client.gauche; encoding: shift_jis -*-
+; -*- mode: lisp; package: http-client.api; encoding: shift_jis -*-
 
 ;; Copyright (c) 2012 MIYAMUKO Katsuyuki.
 ;;
@@ -24,11 +24,11 @@
 ;;; Code:
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (require "http-client/gauche/package")
-  (require "http-client/gauche/header")
+  (require "http-client/api/package")
+  (require "http-client/api/header")
   )
 
-(in-package :http-client.gauche)
+(in-package :http-client.api)
 
 (defparameter *http-user-agent* (format nil "xyzzy.http/~A" (software-version)))
 
@@ -76,6 +76,6 @@
             )))
 
 
-(provide "http-client/gauche/request")
+(provide "http-client/api/request")
 
 ;;; End

@@ -1,4 +1,4 @@
-; -*- mode: lisp; package: http-client.gauche; encoding: shift_jis -*-
+; -*- mode: lisp; package: http-client.api; encoding: shift_jis -*-
 
 ;; Copyright (c) 2012 MIYAMUKO Katsuyuki.
 ;;
@@ -24,14 +24,14 @@
 ;;; Code:
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (require "http-client/gauche/package")
-  (require "http-client/gauche/request")
-  (require "http-client/gauche/header")
-  (require "http-client/gauche/types")
-  (require "http-client/gauche/url")
+  (require "http-client/api/package")
+  (require "http-client/api/request")
+  (require "http-client/api/header")
+  (require "http-client/api/types")
+  (require "http-client/api/url")
   )
 
-(in-package :http-client.gauche)
+(in-package :http-client.api)
 
 ;; '((:data "..." :size 3)
 ;;   (:file "a.txt" :size 3000))
@@ -165,6 +165,6 @@
   (1- (si:chunk-size (si:make-string-chunk str))))
 
 
-(provide "http-client/gauche/form-data")
+(provide "http-client/api/form-data")
 
 ;;; End

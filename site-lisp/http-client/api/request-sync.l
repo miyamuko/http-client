@@ -1,4 +1,4 @@
-; -*- mode: lisp; package: http-client.gauche; encoding: shift_jis -*-
+; -*- mode: lisp; package: http-client.api; encoding: shift_jis -*-
 
 ;; Copyright (c) 2012 MIYAMUKO Katsuyuki.
 ;;
@@ -24,15 +24,15 @@
 ;;; Code:
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (require "http-client/gauche/package")
-  (require "http-client/gauche/request")
-  (require "http-client/gauche/header")
-  (require "http-client/gauche/types")
-  (require "http-client/gauche/url")
-  (require "http-client/gauche/form-data")
+  (require "http-client/api/package")
+  (require "http-client/api/request")
+  (require "http-client/api/header")
+  (require "http-client/api/types")
+  (require "http-client/api/url")
+  (require "http-client/api/form-data")
   )
 
-(in-package :http-client.gauche)
+(in-package :http-client.api)
 
 (defun http-request-sync (method server request-uri body
                                  &rest headers
@@ -99,6 +99,6 @@
        (do-events)))))
 
 
-(provide "http-client/gauche/request-sync")
+(provide "http-client/api/request-sync")
 
 ;;; End

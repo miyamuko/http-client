@@ -6,65 +6,16 @@
 
 ## SYNOPSIS
 
-### Node.js ほぼ互換 API
-
 ```lisp
 (require "http-client")
 
 (defpackage :your-app
   (:use
    :lisp :editor
-   :http-client.node ;; Node.js ほぼ互換パッケージ
+   :http-client
    ))
 
 (in-package :your-app)
-
-(defun http-download-async (url localfile callback)
-  (let* ((opts (parse-url url))
-         (req (http-get opts))
-         (out (open localfile :direction :output :encoding :binary)))
-    (flet ((complete (err)
-             (close out)
-             (funcall callback url localfile err)))
-      (on :response req
-          #'(lambda (res)
-              (on :data res
-                  #'(lambda (chunk) (princ chunk out)))
-              (on :end res
-                  #'(lambda () (complete nil)))
-              (on :close res
-                  #'(lambda (err)
-                      (when err (complete err))))
-              ))
-      (on :error req
-          #'(lambda (err) (complete err)))
-      (http-request-end req)
-      req)))
-
-(http-download-async "http://www.jsdlab.co.jp/~kamei/cgi-bin/download.cgi"
-                     "xyzzy-0.2.2.235.lzh"
-                     #'(lambda (url localfile err)
-                         (if err
-                             (msgbox "ダウンロードが失敗しました。~%URL: ~A~%File: ~A~%Error: ~A"
-                                     url localfile err)
-                           (msgbox "ダウンロードが完了しました。~%URL: ~A~%File: ~A~%MD5: ~A"
-                                   url localfile
-                                   (with-open-file (s localfile :encoding :binary)
-                                     (si:md5 s))))))
-```
-
-### Gauche (rfc.http) ほぼ互換 API
-
-```lisp
-(require "http-client")
-
-(defpackage :your-app2
-  (:use
-   :lisp :editor
-   :http-client.gauche ;; Gauche (rfc.http) ほぼ互換パッケージ
-   ))
-
-(in-package :your-app2)
 
 (defun http-download-async (url localfile callback)
   (let ((out (open localfile :direction :output :encoding :binary))
@@ -107,13 +58,9 @@ xl-winhttp は WinHTTP の API をそのまま提供するという方針であ�
 
 http-client は xl-winhttp をラップし利用しやすい API を提供します。
 
-また、http-client では API の学習コストが最小になるように、以下の HTTP ライブラリの
-仕様を参考にして実装しています。
-
-  * [Node.js ほぼ互換 API](http://nodejs.org/docs/latest/api/http.html)
-    - 非同期 API のみ提供
-  * [Gauche (rfc.http) ほぼ互換 API](http://practical-scheme.net/gauche/man/gauche-refj_146.html)
-    - 同期・非同期 API の両方を提供
+また、http-client では API の学習コストが最小になるように、
+[Gauche の rfc.http モジュール](http://practical-scheme.net/gauche/man/gauche-refj_146.html)
+の仕様を参考にして実装しています。
 
 
 ## INSTALL
