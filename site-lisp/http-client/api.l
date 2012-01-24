@@ -26,6 +26,7 @@
 (in-package :user)
 
 (require "http-client/api/api")
+(require "http-client/api/version")
 
 (provide "http-client/api")
 

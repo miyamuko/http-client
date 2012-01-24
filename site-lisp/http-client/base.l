@@ -27,7 +27,6 @@
 
 (require "http-client/base/agent")
 (require "http-client/base/utils")
-(require "http-client/base/version")
 
 (provide "http-client/base")
 

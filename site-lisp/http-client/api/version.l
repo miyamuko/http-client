@@ -1,4 +1,4 @@
-; -*- mode: lisp; package: http-client; encoding: shift_jis -*-
+; -*- mode: lisp; package: http-client.api; encoding: shift_jis -*-
 
 ;; Copyright (c) 2012 MIYAMUKO Katsuyuki.
 ;;
@@ -24,10 +24,10 @@
 ;;; Code:
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (require "http-client/base/package")
+  (require "http-client/api/package")
   )
 
-(in-package :http-client.base)
+(in-package :http-client.api)
 
 (export '(http-client-version
           ))
@@ -38,6 +38,6 @@
   +http-client-version+)
 
 
-(provide "http-client/base/version")
+(provide "http-client/api/version")
 
 ;;; End

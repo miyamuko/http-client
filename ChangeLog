@@ -1,5 +1,7 @@
 2012-01-24  MIYAMUKO Katsuyuki
 
+	* (http-client-version): http-client.api パッケージに移動
+
 	* パッケージ名を変更
 	- http-client.gauche => http-client.api
 	- http-client.node => http-client.async

@@ -14,6 +14,7 @@
     * [http-compose-query](#http-compose-query)
     * [http-compose-form-data](#http-compose-form-data)
     * [http-secure-connection-available?](#http-secure-connection-available?)
+    * [http-client-version](#http-client-version)
 
 ----
 
@@ -142,7 +143,7 @@ HTTP DELETE リクエストを送信します。
     `BODY` がリストの場合、それはパラメータ指定のリストです。
     各パラメータ指定は、`("submit" "OK")` のような名前と値のリスト、
     もしくは `("upload" :file "logo.png" :content-type "image/png")` のように
-    名前の後にキーワード-値リストを付加したものです。 
+    名前の後にキーワード-値リストを付加したものです。
 
     最初の形式は使うのが簡単で、また request-uri のクエリパラメータリストと同じ形式なので
     GET と POST でルーチンを共有したい場合にも便利でしょう。
@@ -376,3 +377,7 @@ http-client.api> (http-compose-form-data
 
 この関数は常に t を返します。
 Gauche との互換性のために用意されています。
+
+### Function: <a name="http-client-version"><em>http-client-version</em></a>
+
+本ライブラリのバージョンを文字列で返します。
