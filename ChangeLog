@@ -1,5 +1,8 @@
 2012-01-24  MIYAMUKO Katsuyuki
 
+	* Content-Length が間違っているとブロックしてしまうので、
+	レスポンスヘッダの Content-Length を見るのをやめた
+
 	* (http-client-version): http-client.api パッケージに移動
 
 	* パッケージ名を変更

@@ -82,21 +82,14 @@
 
 (defun receive-response (request sink)
   (winhttp:receive-response request)
-  (let ((max-read-length (winhttp:query-response-header request :content-length :type :number))
-        (total-read-length 0))
-    (long-operation
-      (loop
-       (let ((n (if max-read-length
-                    (min winhttp:+default-read-buffer-size+
-                         (- max-read-length total-read-length))
-                  (winhttp:query-data-available request))))
-         (when (<= n 0)
-           (return))
-         (multiple-value-bind (chunk read-length)
-             (winhttp:read-data request n)
-           (princ chunk sink)
-           (incf total-read-length read-length)))
-       (do-events)))))
+  (long-operation
+    (loop
+     (let ((n (winhttp:query-data-available request)))
+       (when (<= n 0)
+         (return))
+       (let ((chunk (winhttp:read-data request n)))
+         (princ chunk sink)))
+     (do-events))))
 
 
 (provide "http-client/api/request-sync")
