@@ -42,10 +42,10 @@
        (setf path (car request-uri)
              params (cdr request-uri))))
     ;; server Ç… http://localhost Ç»Ç«ÇéwíËÇµÇΩèÍçá
-    (when (string-match "\\`\\([a-z]+\\)://\\([^/]+\\)\\(.*\\)\\'" server)
+    (when (string-match "\\`\\(?:\\([a-z]+\\)://\\)?\\([^/]+\\)\\(.*\\)\\'" server)
       (setf scheme (match-string 1)
             server (match-string 2)
-            path (concat path (match-string 3))
+            path (concat (match-string 3) path)
             ))
     (winhttp:create-url scheme nil nil server nil
                         (add-query-params path params :encoding encoding)
