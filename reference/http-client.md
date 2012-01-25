@@ -20,6 +20,7 @@
 
 ## <a name="packages">PACKAGES</a>
 
+
 ### Package: <a name="http-client.api"><em>http-client.api</em></a>
 
 このパッケージは、[RFC2616 "Hypertext Transfer Protocol - HTTP/1.1"](http://tools.ietf.org/html/rfc2616)
@@ -49,6 +50,7 @@ Gauche の rfc.http モジュールとの非互換は以下のとおりです。
 
 ## <a name="variables">VARIABLES</a>
 
+
 ### Variable: <a name="*http-user-agent*"><em>\*http-user-agent\*</em></a>
 
 user-agent ヘッダに渡される値のデフォルト値を指定するスペシャル変数です。
@@ -60,11 +62,13 @@ user-agent ヘッダに渡される値のデフォルト値を指定するスペ
 
 ## <a name="functions">FUNCTIONS</a>
 
+
 ### Function: <a name="http-get"><em>http-get</em></a> <i>`SERVER` `REQUEST-URI` &rest `HEADERS` &key `:request-encoding` `:proxy` `:sink` `:flusher` `:no-redirect` `:secure` `:async` `:oncomplete` `:onerror` &allow-other-keys</i>
 
 HTTP GET リクエストを送信します。
 
 詳細は [http-request](#http-request) を参照してください。
+
 
 ### Function: <a name="http-head"><em>http-head</em></a> <i>`SERVER` `REQUEST-URI` &rest `HEADERS` &key `:request-encoding` `:proxy` `:no-redirect` `:secure` `:async` `:oncomplete` `:onerror` &allow-other-keys</i>
 
@@ -72,11 +76,13 @@ HTTP HEAD リクエストを送信します。
 
 詳細は [http-request](#http-request) を参照してください。
 
+
 ### Function: <a name="http-post"><em>http-post</em></a> <i>`SERVER` `REQUEST-URI` `BODY` &rest `HEADERS` &key `:request-encoding` `:proxy` `:sink` `:flusher` `:no-redirect` `:secure` `:async` `:oncomplete` `:onerror` &allow-other-keys</i>
 
 HTTP POST リクエストを送信します。
 
 詳細は [http-request](#http-request) を参照してください。
+
 
 ### Function: <a name="http-put"><em>http-put</em></a> <i>`SERVER` `REQUEST-URI` `BODY` &rest `HEADERS` &key `:request-encoding` `:proxy` `:sink` `:flusher` `:secure` `:async` `:oncomplete` `:onerror` &allow-other-keys</i>
 
@@ -84,11 +90,13 @@ HTTP PUT リクエストを送信します。
 
 詳細は [http-request](#http-request) を参照してください。
 
+
 ### Function: <a name="http-delete"><em>http-delete</em></a> <i>`SERVER` `REQUEST-URI` &rest `HEADERS` &key `:request-encoding` `:proxy` `:sink` `:flusher` `:secure` `:async` `:oncomplete` `:onerror` &allow-other-keys</i>
 
 HTTP DELETE リクエストを送信します。
 
 詳細は [http-request](#http-request) を参照してください。
+
 
 ### Function: <a name="http-request"><em>http-request</em></a> <i>`METHOD` `SERVER` `REQUEST-URI` `BODY` &rest `HEADERS` &key `:request-encoding` `:proxy` `:sink` `:flusher` `:no-redirect` `:secure` `:async` `:oncomplete` `:onerror` &allow-other-keys</i>
 
@@ -294,7 +302,7 @@ HTTP DELETE リクエストを送信します。
 
 #### 戻り値
 
-  手続きは 3 つの値を返します。
+同期処理の場合、手続きは 3 つの値を返します。
 
   * 1 つ目は、RFC2616 で定義されているステータスコードの文字列値(例えば、成功時の "200" など)です。
 
@@ -314,6 +322,8 @@ HTTP DELETE リクエストを送信します。
 
     キーワード引数によって、メッセージボディがどのように扱われるかを制御できます。
     例えば、中間的な文字列を作らずに、返されたメッセージボディを直接ファイルに格納することが出来ます。
+
+非同期処理の場合、手続きはリクエストオブジェクトを返します。
 
 
 ### Function: <a name="http-compose-query"><em>http-compose-query</em></a> <i>`PATH` `PARAMS` &optional `ENCODING`</i>
@@ -338,6 +348,7 @@ http-client.api> (http-compose-query "/search"
                                      "q=xyzzy%20%93%C7%82%DD%95%FB&num=30")
 "/search?q=xyzzy%20%93%C7%82%DD%95%FB&num=30"
 ```
+
 
 ### Function: <a name="http-compose-form-data"><em>http-compose-form-data</em></a> <i>`PARAMS` `PORT` &optional `ENCODING`</i>
 
@@ -373,10 +384,12 @@ http-client.api> (http-compose-form-data
 "boundary-23vt3uiri0nrp4ftwbnwnuiajo4bvl6r2jcixdyv0"
 ```
 
+
 ### Function: <a name="http-secure-connection-available?"><em>http-secure-connection-available?</em></a>
 
 この関数は常に t を返します。
 Gauche との互換性のために用意されています。
+
 
 ### Function: <a name="http-client-version"><em>http-client-version</em></a>
 
