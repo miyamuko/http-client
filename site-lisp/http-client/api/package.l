@@ -51,6 +51,15 @@
     (ansify::install :http-client.api))
   )
 
+(in-package :http-client.api)
+
+(export '(;; from http-client.base
+          http-request-abort
+          http-request-aborted-p
+          http-request-completed-p
+          http-request-waiting-p
+          ))
+
 
 (provide "http-client/api/package")
 

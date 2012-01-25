@@ -1,5 +1,15 @@
 2012-01-25  MIYAMUKO Katsuyuki
 
+	* 非同期処理用の API を追加
+	- http-request-abort
+	  - 非同期処理を中断
+	- http-request-aborted-p
+	  - 非同期処理が中断したかどうか
+	- http-request-completed-p
+	  - 非同期処理が完了したかどうか
+	- http-request-waiting-p
+	  - 非同期処理の完了待ちかどうか
+
 	* 非同期処理のコードを整理
 	- http-client.async を http-client.base パッケージに統合
 	- 非同期処理時に :no-redirect や :proxy を無視しているのを修正

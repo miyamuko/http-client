@@ -43,6 +43,11 @@
           http-compose-query
           http-compose-form-data
           http-secure-connection-available?
+
+          http-request-abort
+          http-request-aborted-p
+          http-request-completed-p
+          http-request-waiting-p
           ))
 
 (defun http-get (server request-uri &rest headers &key
@@ -111,6 +116,28 @@
 
 (defun http-secure-connection-available? ()
   t)
+
+
+;;; Gauche ”ñŒİŠ·
+
+(defun http-request-abort (request)
+  (unless (http-request-completed-p request)
+    (let ((ctx (winhttp:request-context request)))
+      (setf (context-aborted-p ctx) t))
+    (winhttp:close-handle request)
+    ))
+
+(defun http-request-aborted-p (request)
+  (let ((ctx (winhttp:request-context request)))
+    (context-aborted-p ctx)))
+
+(defun http-request-completed-p (request)
+  ;; ’†’f‚µ‚½‚ç request-error ‚ª”­¶‚µ‚Ä close ‚³‚ê‚é‚Ì‚Å
+  ;; abort ‚Ìê‡‚à t ‚ª•Ô‚é
+  (winhttp:request-closed-p request))
+
+(defun http-request-waiting-p (request)
+  (not (http-request-completed-p request)))
 
 
 (provide "http-client/api/api")

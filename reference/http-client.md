@@ -11,6 +11,10 @@
     * [http-put](#http-put)
     * [http-delete](#http-delete)
     * [http-request](#http-request)
+    * [http-request-abort](#http-request-abort)
+    * [http-request-aborted-p](#http-request-aborted-p)
+    * [http-request-completed-p](#http-request-completed-p)
+    * [http-request-waiting-p](#http-request-waiting-p)
     * [http-compose-query](#http-compose-query)
     * [http-compose-form-data](#http-compose-form-data)
     * [http-secure-connection-available?](#http-secure-connection-available?)
@@ -324,6 +328,63 @@ HTTP DELETE リクエストを送信します。
     例えば、中間的な文字列を作らずに、返されたメッセージボディを直接ファイルに格納することが出来ます。
 
 非同期処理の場合、手続きはリクエストオブジェクトを返します。
+
+
+### Function: <a name="http-request-abort"><em>http-request-abort</em></a> <i>`REQUEST`</i>
+
+指定した `REQUEST` を中断します。
+
+引数には http-{get,head,post,put,delete,request} の戻り値を指定可能です。
+
+通信を中断したなら t を返します。
+既に通信が終了していたら何もせず nil を返します。
+
+__See Also:__
+
+  * [http-request-aborted-p](#http-request-aborted-p)
+
+
+### Function: <a name="http-request-aborted-p"><em>http-request-aborted-p</em></a> <i>`REQUEST`</i>
+
+`REQUEST` を [abort した場合](#http-request-abort) t を返します。
+
+引数には http-{get,head,post,put,delete,request} の戻り値を指定可能です。
+
+```lisp
+http-client.api> (let ((req (http-get "www.google.co.jp" "/" :async t)))
+                   (values
+                    (list (http-request-aborted-p req)
+                          (http-request-waiting-p req)
+                          (http-request-completed-p req))
+                    (http-request-abort req)
+                    (list (http-request-aborted-p req)
+                          (http-request-waiting-p req)
+                          (http-request-completed-p req))))
+(nil t nil) ;
+t ;
+(t nil t)
+```
+
+__See Also:__
+
+  * [http-request-aborted-p](#http-request-aborted-p)
+
+
+### Function: <a name="http-request-completed-p"><em>http-request-completed-p</em></a> <i>`REQUEST`</i>
+
+指定した `REQUEST` が完了したなら t を返します。
+
+  * リクエストを [abort した場合](#http-request-abort) でも t を返します。
+  * リクエストが完了したか abort したかは、[http-request-aborted-p](#http-request-aborted-p) で区別します。
+
+引数には http-{get,head,post,put,delete,request} の戻り値を指定可能です。
+
+
+### Function: <a name="http-request-waiting-p"><em>http-request-waiting-p</em></a> <i>`REQUEST`</i>
+
+指定した `REQUEST` がまだ処理中なら t を返します。
+
+引数には http-{get,head,post,put,delete,request} の戻り値を指定可能です。
 
 
 ### Function: <a name="http-compose-query"><em>http-compose-query</em></a> <i>`PATH` `PARAMS` &optional `ENCODING`</i>

@@ -84,13 +84,6 @@ http-client は xl-winhttp をラップし利用しやすい API を提供しま
 * 非同期処理完了時に request と connection の close
 * http-error
   - winhttp-condition をラップする
-* API 追加
-  - http-abort
-    - 非同期処理を中断
-  - http-request-aborted-p
-    - 非同期処理が中断したかどうか
-  - http-request-completed-p
-    - 非同期処理が完了したかどうか
 * イベント追加?
   - onabort
   - onresponse

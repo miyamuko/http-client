@@ -29,6 +29,9 @@
 
 (in-package :http-client.base)
 
+(export '(context-aborted-p
+          ))
+
 (defstruct context
   (aborted-p nil :type bool)
   (last-event nil)
