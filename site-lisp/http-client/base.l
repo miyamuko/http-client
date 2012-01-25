@@ -26,6 +26,9 @@
 (in-package :user)
 
 (require "http-client/base/agent")
+(require "http-client/base/api")
+(require "http-client/base/events")
+(require "http-client/base/types")
 (require "http-client/base/utils")
 
 (provide "http-client/base")

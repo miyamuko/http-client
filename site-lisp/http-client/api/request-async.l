@@ -49,61 +49,67 @@
   (check-type method (or string symbol))
   (check-type sink (or output-stream null))
   (remove-from-plistf headers :request-encoding :proxy :sink :flusher :no-redirect :secure :async :oncomplete :onerror)
-  (let ((opts (http-client.async:parse-url (create-url server request-uri
-                                                       :encoding request-encoding
-                                                       :secure secure))))
-    (multiple-value-bind (content-type form-data multipart-p)
-        (build-form-data body request-encoding)
-      (when content-type
-        (setf headers (append headers `(:content-type ,content-type
-                                        :content-length ,(calc-multipart/form-data-size form-data)
-                                        ))))
-      (setf opts (append opts `(:method ,method
-                                :headers ,headers)))
-      (let ((req (http-client.async:http-request opts)))
-        (on :response req
-            #'(lambda (res)
-                (on :data res
-                    #'(lambda (chunk)
-                        (princ chunk sink)))
-                (on :end res
-                    #'(lambda ()
-                        (multiple-value-call oncomplete
-                          (finish-response req sink flusher))))
-                (on :close res
-                    #'(lambda (err)
-                        (when err
-                          (funcall onerror err))))
-                ))
-        (on :send req
-            #'(lambda (n)
-                (cond ((and multipart-p form-data)
-                       (setf form-data
-                             (write-multipart/form-data-async
-                              #'(lambda (chunk)
-                                  (http-client.async:http-request-write req chunk nil))
-                              form-data)))
-                      (t
-                       (http-client.async:http-request-end req form-data nil)))))
-        (on :error req
-            #'(lambda (err)
-                (funcall onerror err)))
-        req))))
+  (multiple-value-bind (scheme _ _ host port path extra secure)
+      (winhttp:crack-url (create-url server request-uri
+                                     :encoding request-encoding
+                                     :secure secure))
+    (let* ((session (get-session-create :async async))
+          (connection (winhttp:connect session host port))
+          (request (winhttp:open-request connection method `(,path ,extra)
+                                         :accept "*/*"
+                                         :secure secure)))
+      (setup-options request proxy no-redirect)
+      (setup-headers request headers)
+      (multiple-value-bind (content-type content-length form-data multipart-p)
+          (build-form-data body request-encoding)
+        (when content-type
+          (add-default-header request :content-type content-type))
+        (when content-length
+          (add-default-header request :content-length content-length))
+        (http-set-callback request)
+        (on-send request
+          #'(lambda (n)
+              (cond ((and multipart-p form-data)
+                     (setf form-data
+                           (write-multipart/form-data-async
+                            (curry #'winhttp:write-data request)
+                            form-data)))
+                    (t
+                     (winhttp:receive-response request)))))
+        (on-data request
+          #'(lambda (chunk)
+              (princ chunk sink)))
+        (on-end request
+          #'(lambda ()
+                   (multiple-value-call oncomplete
+                     (finish-response request sink flusher))))
+        (on-close request
+          #'(lambda (err)
+                     (winhttp:close-handle connection)
+                     (when err
+                       (funcall onerror err))))
+        (on-error request
+          #'(lambda (err)
+              (funcall onerror err)))
+        (send-request request body request-encoding)
+        request))))
 
 (defun build-form-data (body request-encoding)
   (check-type body (or string list))
   (cond ((null body)
-         (values nil nil nil))
+         (values nil nil nil nil))
         ((multipart-form-data-p body)
          (let* ((boundary (make-boundary))
                 (form-data (build-multipart/form-data body request-encoding boundary))
                 (total-length (calc-multipart/form-data-size form-data)))
            (values (content-type-header-value :form-data t :boundary boundary)
+                   total-length
                    form-data
                    t)
            ))
         (t
          (values (content-type-header-value :urlencoded t)
+                 nil
                  (url-encode-params body request-encoding)
                  nil)
          )))

@@ -1,4 +1,4 @@
-; -*- mode: lisp; package: http-client.async; encoding: shift_jis -*-
+; -*- mode: lisp; package: http-client.base; encoding: shift_jis -*-
 
 ;; Copyright (c) 2012 MIYAMUKO Katsuyuki.
 ;;
@@ -24,31 +24,18 @@
 ;;; Code:
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (require "http-client/async/package")
+  (require "http-client/base/package")
   )
 
-(in-package :http-client.async)
+(in-package :http-client.base)
 
 (defstruct context
   (aborted-p nil :type bool)
-  (waiting-p nil :type bool)
-  (paused-p nil :type bool)
-  (waiting-jobs nil)
-  (paused-events nil)
   (last-event nil)
   (callbacks nil)
   )
 
-(defun take-waiting-jobs (context)
-  (pop (context-waiting-jobs context)))
 
-(defun put-waiting-jobs (context job)
-  (appendf (context-waiting-jobs context) (list job)))
-
-(defun put-paused-events (context job)
-  (appendf (context-paused-events context) (list job)))
-
-
-(provide "http-client/async/types")
+(provide "http-client/base/types")
 
 ;;; End

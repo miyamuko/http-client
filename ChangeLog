@@ -1,3 +1,9 @@
+2012-01-25  MIYAMUKO Katsuyuki
+
+	* 非同期処理のコードを整理
+	- http-client.async を http-client.base パッケージに統合
+	- 非同期処理時に :no-redirect や :proxy を無視しているのを修正
+
 2012-01-24  MIYAMUKO Katsuyuki
 
 	* (finish-output): flusher を呼ぶ前に sink に対して

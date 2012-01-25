@@ -29,7 +29,6 @@
   (require "xl-alexandria")
   (require "xl-winhttp")
   (require "http-client/base")
-  (require "http-client/async")
 
   (unless (find-package :http-client.api)
     (defpackage :http-client.api
@@ -47,9 +46,6 @@
       (:shadowing-import-from :ansi-loop
        :loop
        :loop-finish
-       )
-      (:shadowing-import-from :http-client.async
-       :on
        )
       )
     (ansify::install :http-client.api))

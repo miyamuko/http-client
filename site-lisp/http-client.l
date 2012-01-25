@@ -25,7 +25,6 @@
 
 (in-package :user)
 
-(require "http-client/async")
 (require "http-client/api")
 
 (provide "http-client")

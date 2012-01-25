@@ -79,8 +79,6 @@ http-client は xl-winhttp をラップし利用しやすい API を提供しま
 
 ## TODO
 
-* 非同期処理のコードを整理
-* 非同期処理時に :no-redirect や :proxy を無視しているのを修正
 * :accept */* は Accept ヘッダが指定されていない場合のみ設定する
   - `*default-accept-header*`
 * 非同期処理完了時に request と connection の close

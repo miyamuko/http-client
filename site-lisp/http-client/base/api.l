@@ -1,4 +1,4 @@
-; -*- mode: lisp; package: http-client.async; encoding: shift_jis -*-
+; -*- mode: lisp; package: http-client.base; encoding: shift_jis -*-
 
 ;; Copyright (c) 2012 MIYAMUKO Katsuyuki.
 ;;
@@ -24,24 +24,22 @@
 ;;; Code:
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (require "http-client/async/package")
+  (require "http-client/base/package")
   )
 
-(in-package :http-client.async)
+(in-package :http-client.base)
 
-(defun parse-auth (auth)
-  (etypecase auth
-    (null nil)
-    (string
-     (values-list (cons :basic (split-string auth #\: 2))))
-    (list
-     (values-plist auth '(:scheme :user :pass)))
-    ))
+(export '(http-request-abort
+          ))
 
-(defun option-values (option-plist)
-  (values-plist option-plist '(:host :hostname :port :method :path :headers :auth :secure)))
+(defun http-request-abort (request)
+  (let ((ctx (winhttp:request-context request)))
+    (unless (context-aborted-p ctx)
+      (setf (context-aborted-p ctx) t)
+      (winhttp:close-handle request)
+      )))
 
 
-(provide "http-client/async/utils")
+(provide "http-client/base/api")
 
 ;;; End
