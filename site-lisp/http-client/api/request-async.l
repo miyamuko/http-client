@@ -91,28 +91,12 @@
         (on-error request
           #'(lambda (err)
               (funcall onerror err)))
-        (send-request request body request-encoding)
+        (if multipart-p
+            (winhttp:send-request request)
+          (progn
+            (winhttp:send-request request :data form-data)
+            (setf form-data nil)))
         request))))
-
-(defun build-form-data (body request-encoding)
-  (check-type body (or string list))
-  (cond ((null body)
-         (values nil nil nil nil))
-        ((multipart-form-data-p body)
-         (let* ((boundary (make-boundary))
-                (form-data (build-multipart/form-data body request-encoding boundary))
-                (total-length (calc-multipart/form-data-size form-data)))
-           (values (content-type-header-value :form-data t :boundary boundary)
-                   total-length
-                   form-data
-                   t)
-           ))
-        (t
-         (values (content-type-header-value :urlencoded t)
-                 nil
-                 (url-encode-params body request-encoding)
-                 nil)
-         )))
 
 
 (provide "http-client/api/request-async")

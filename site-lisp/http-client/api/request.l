@@ -67,6 +67,26 @@
                  (< 2 (length param)))
              body)))
 
+(defun build-form-data (body request-encoding)
+  (check-type body (or string list))
+  (cond ((null body)
+         (values nil nil nil nil))
+        ((multipart-form-data-p body)
+         (let* ((boundary (make-boundary))
+                (form-data (build-multipart/form-data body request-encoding boundary))
+                (total-length (calc-multipart/form-data-size form-data)))
+           (values (content-type-header-value :form-data t :boundary boundary)
+                   total-length
+                   form-data
+                   t)
+           ))
+        (t
+         (values (content-type-header-value :urlencoded t)
+                 nil
+                 (url-encode-params body request-encoding)
+                 nil)
+         )))
+
 (defun finish-response (request sink flusher)
   (finish-output sink)
   (let ((headers (query-response-header-alist request)))

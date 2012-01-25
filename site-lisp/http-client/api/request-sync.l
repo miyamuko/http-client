@@ -55,30 +55,26 @@
         (winhttp:with-open-request (request connection method `(,path ,extra)
                                             :accept "*/*"
                                             :secure secure)
-          (setup-headers request headers)
           (setup-options request proxy no-redirect)
-          (send-request request body request-encoding)
-          (receive-response request sink)
-          (finish-response request sink flusher)
-          )))))
+          (setup-headers request headers)
+          (multiple-value-bind (content-type content-length form-data multipart-p)
+              (build-form-data body request-encoding)
+            (when content-type
+              (add-default-header request :content-type content-type))
+            (when content-length
+              (add-default-header request :content-length content-length))
+            (send-request request form-data multipart-p)
+            (receive-response request sink)
+            (finish-response request sink flusher)
+            ))))))
 
-(defun send-request (request body request-encoding)
-  (check-type body (or string list))
-  (cond ((null body)
-         (winhttp:send-request request))
-        ((multipart-form-data-p body)
-         (let* ((boundary (make-boundary))
-                (form-data (build-multipart/form-data body request-encoding boundary))
-                (total-length (calc-multipart/form-data-size form-data)))
-           (add-content-type-header request :form-data t :boundary boundary)
-           (winhttp:send-request request :total-length total-length)
-           (write-multipart/form-data (curry #'winhttp:write-data request) form-data)
-           ))
+(defun send-request (request form-data multipart-p)
+  (cond (multipart-p
+         (winhttp:send-request request)
+         (write-multipart/form-data (curry #'winhttp:write-data request) form-data))
         (t
-         (add-content-type-header request :urlencoded t)
-         (winhttp:send-request request :data (url-encode-params body request-encoding))
-         )))
-
+         (winhttp:send-request request :data form-data))
+        ))
 
 (defun receive-response (request sink)
   (winhttp:receive-response request)
