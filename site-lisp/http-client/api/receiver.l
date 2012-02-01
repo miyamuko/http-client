@@ -81,7 +81,7 @@
           )
       ))
 
-(defun http-stream-chunk-receiver (callback &key if-not-success (http-string-receiver))
+(defun http-stream-chunk-receiver (callback &key (if-not-success (http-string-receiver)))
   #'(lambda (status headers content-length)
       (if (<= 200 status 299)
           #'(lambda (chunk)
@@ -89,7 +89,7 @@
         (funcall if-not-success status headers content-length)
         )))
 
-(defun http-stream-line-receiver (callback &key if-not-success (http-string-receiver))
+(defun http-stream-line-receiver (callback &key (if-not-success (http-string-receiver)))
   #'(lambda (status headers content-length)
       (if (<= 200 status 299)
           (let (buffer)
@@ -105,8 +105,8 @@
                 (unless chunk
                   (when (string/= "" buffer)
                     (funcall callback buffer))
-                  (funcall callback nil)
-                  (setf buffer nil))))
+                  (setf buffer nil)
+                  (funcall callback nil))))
         (funcall if-not-success status headers content-length)
         )))
 

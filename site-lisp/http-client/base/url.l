@@ -54,11 +54,11 @@
             query-string)))
 
 (defun url-encode-params (data &optional encoding literal-chars)
-  (setf data (winhttp.internal::to-alist data))
   (etypecase data
     (null nil)
     (string data)
     (list
+     (setf data (winhttp.internal::to-alist data))
      (format nil "~{~A~^&~}"
              (mapcar #'(lambda (e)
                          (url-encode-key-value e encoding literal-chars))
