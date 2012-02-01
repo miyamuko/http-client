@@ -51,16 +51,15 @@
           http-request-header
           http-request-header-alist
           ;; response accessors
-          http-response-result
           http-response-status
           http-response-status-text
           http-response-header
           http-response-header-alist
+          http-response-result
           http-response-values
           ;; utilities
           http-compose-query
           http-compose-form-data
-          ;; End
           ))
 
 
@@ -222,13 +221,6 @@
 
 ;;; response accessors
 
-(defun http-response-result (client)
-  (http-response-wait client)
-  (when-let (r (http-client-result client))
-    (if (string-output-stream-p r)
-        (get-output-stream-string r)
-      r)))
-
 (defun http-response-status (client)
   (http-response-wait client :ready-state :loading)
   (http-client-status-code client))
@@ -243,6 +235,13 @@
 (defun http-response-header-alist (client)
   (http-response-wait client :ready-state :loading)
   (http-client-response-header-alist client))
+
+(defun http-response-result (client)
+  (http-response-wait client)
+  (when-let (r (http-client-result client))
+    (if (string-output-stream-p r)
+        (get-output-stream-string r)
+      r)))
 
 (defun http-response-values (client)
   (values (http-response-result client)
