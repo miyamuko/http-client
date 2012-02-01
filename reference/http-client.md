@@ -701,12 +701,6 @@ http-client.api> (http-compose-form-data
 ```
 
 
-### Function: <a name="http-secure-connection-available?"><em>http-secure-connection-available?</em></a>
-
-この関数は常に t を返します。
-Gauche との互換性のために用意されています。
-
-
 ### Function: <a name="http-client-version"><em>http-client-version</em></a>
 
 本ライブラリのバージョンを文字列で返します。
