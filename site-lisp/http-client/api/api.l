@@ -224,7 +224,10 @@
 
 (defun http-response-result (client)
   (http-response-wait client)
-  (http-client-result client))
+  (when-let (r (http-client-result client))
+    (if (string-output-stream-p r)
+        (get-output-stream-string r)
+      r)))
 
 (defun http-response-status (client)
   (http-response-wait client :ready-state :loading)

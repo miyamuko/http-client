@@ -43,7 +43,7 @@
         #'(lambda (chunk)
             (if chunk
                 (princ chunk sink)
-              (get-output-stream-string sink)))
+              sink))
         )))
 
 (defun http-file-receiver (filename &key encoding if-exists share)
