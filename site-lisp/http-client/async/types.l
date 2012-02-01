@@ -1,4 +1,4 @@
-; -*- mode: lisp; package: http-client.base; encoding: shift_jis -*-
+; -*- mode: lisp; package: http-client.async; encoding: shift_jis -*-
 
 ;; Copyright (c) 2012 MIYAMUKO Katsuyuki.
 ;;
@@ -24,10 +24,10 @@
 ;;; Code:
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (require "http-client/base/package")
+  (require "http-client/async/package")
   )
 
-(in-package :http-client.base)
+(in-package :http-client.async)
 
 (export '(context-aborted-p
           ))
@@ -39,6 +39,6 @@
   )
 
 
-(provide "http-client/base/types")
+(provide "http-client/async/types")
 
 ;;; End

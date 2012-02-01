@@ -1,4 +1,4 @@
-; -*- mode: lisp; package: http-client.test.api-http-get; encoding: shift_jis -*-
+; -*- mode: lisp; package: user; encoding: shift_jis -*-
 
 ;; Copyright (c) 2012 MIYAMUKO Katsuyuki.
 ;;
@@ -23,45 +23,13 @@
 
 ;;; Code:
 
-(require "lisp-unit")
+(in-package :user)
 
-(require "json")
-(require "http-client")
-(require "http-client/test/helper")
+(require "http-client/async/agent")
+(require "http-client/async/events")
+(require "http-client/async/types")
+(require "http-client/async/request")
 
-(defpackage :http-client.test.api-http-get
-  (:use :lisp :editor
-   :lisp-unit
-   :json
-   :http-client
-   :http-client.test.helper
-   )
-  )
+(provide "http-client/async")
 
-(in-package :http-client.test.api-http-get)
-
-(remove-all-tests :http-client.test.api-http-get)
-
-(define-test http-client/api-http-user-agent/get
-  (multiple-value-bind (body status headers)
-      (let ((*http-user-agent* "hoge"))
-        (http-get "http://localhost:3000/snoop"
-                  :async nil))
-    (let ((json (json-decode body)))
-      (assert-equal "hoge"
-          ($ json "headers" "user-agent"))
-      )
-    )
-  )
-
-(define-test http-client/api-http-user-agent/post
-  (multiple-value-bind (body status headers)
-      (http-post "http://localhost:3000/snoop" nil
-                 :headers `(:User-Agent "fuga")
-                 :async nil)
-    (let ((json (json-decode body)))
-      (assert-equal "fuga"
-          ($ json "headers" "user-agent"))
-      )
-    )
-  )
+;;; End

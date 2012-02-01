@@ -48,7 +48,7 @@
 
 (define-test http-client/api-http-get
   (multiple-value-bind (status headers body)
-      (http-get "localhost:3000" "/snoop")
+      (http-get "http://localhost:3000/snoop" :async nil)
     (assert-equal "200" status)
     (assert-equal '("application/json; charset=utf-8")
         ($ headers "content-type"))
@@ -64,11 +64,12 @@
 
 (define-test http-client/api-http-get/header
   (multiple-value-bind (status headers body)
-      (http-get "localhost:3000" "/snoop"
-                :X-Yzzy-Version (software-version)
-                :X-Hoge 1
-                :X-Hoge 2
-                :X-Hoge 3)
+      (http-get "http://localhost:3000/snoop"
+                :headers `(:X-Yzzy-Version ,(software-version)
+                           :X-Hoge 1
+                           :X-Hoge 2
+                           :X-Hoge 3)
+                :async nil)
     (let ((json (json-decode body)))
       (assert-equal (software-version) ($ json "headers" "X-Yzzy-Version"))
       ;; Express ‚ª‚Ü‚Æ‚ß‚Ä‚é?
@@ -79,8 +80,10 @@
 
 (define-test http-client/api-http-get/query
   (multiple-value-bind (status headers body)
-      (http-get "localhost:3000" '("/snoop" (q "xyzzy “Ç‚Ý•û") (num 50))
-                :request-encoding *encoding-sjis*)
+      (http-get "http://localhost:3000/snoop"
+                :query '((q "xyzzy “Ç‚Ý•û") (num 50))
+                :encoding *encoding-sjis*
+                :async nil)
     (let ((json (json-decode body)))
       (assert-equal "xyzzy%20%93%C7%82%DD%95%FB" ($ json "query" "q"))
       (assert-equal "50" ($ json "query" "num"))

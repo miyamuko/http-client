@@ -31,7 +31,7 @@
 (defpackage :http-client.test.form-data
   (:use :lisp :editor
    :lisp-unit
-   :http-client
+   :http-client.base
    )
   )
 
@@ -39,10 +39,10 @@
 
 (remove-all-tests :http-client.test.form-data)
 
-(define-test http-client/form-data/multipart-form-data-p
-  (assert-equal nil (http-client::multipart-form-data-p '((q "hoge"))))
-  (assert-equal t (http-client::multipart-form-data-p '((q :value "hoge"))))
-  (assert-equal t (http-client::multipart-form-data-p '((q :file "hoge.png"))))
-  (assert-equal t (http-client::multipart-form-data-p '((q :file nil :value "hoge"))))
-  (assert-equal t (http-client::multipart-form-data-p '((q :file nil :value "hoge" :content-type "text/html"))))
+(define-test http-client.base/form-data/multipart-form-data-p
+  (assert-equal nil (multipart/form-data-p '((q "hoge"))))
+  (assert-equal t (multipart/form-data-p '((q :value "hoge"))))
+  (assert-equal t (multipart/form-data-p '((q :file "hoge.png"))))
+  (assert-equal t (multipart/form-data-p '((q :file nil :value "hoge"))))
+  (assert-equal t (multipart/form-data-p '((q :file nil :value "hoge" :content-type "text/html"))))
   )

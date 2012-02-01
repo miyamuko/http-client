@@ -1,4 +1,4 @@
-; -*- mode: lisp; package: http-client.base; encoding: shift_jis -*-
+; -*- mode: lisp; package: http-client.async; encoding: shift_jis -*-
 
 ;; Copyright (c) 2012 MIYAMUKO Katsuyuki.
 ;;
@@ -24,10 +24,10 @@
 ;;; Code:
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (require "http-client/base/package")
+  (require "http-client/async/package")
   )
 
-(in-package :http-client.base)
+(in-package :http-client.async)
 
 (export '(http-set-callback
           http-request-abort
@@ -73,6 +73,10 @@
     ((:request-error req type error)
      (winhttp:close-handle req)
      (emit-error req error))
+    ;; SSL エラー
+    ((:secure-failure failure)
+     ;; TODO
+     )
     ;; コールバック内でエラー
     ((:callback-error req error)
      (winhttp:close-handle req)
@@ -81,6 +85,34 @@
     ((:callback-quit req error)
      (winhttp:close-handle req)
      (emit-error req error))
+    ;((:resolving-name server)
+    ; )
+    ;((:name-resolved addr)
+    ; )
+    ;((:connecting-to-server addr)
+    ; )
+    ;((:connected-to-server addr)
+    ; )
+    ;((:headers-available)
+    ; )
+    ;((:intermediate-response status-code)
+    ; )
+    ;((:redirect url)
+    ; )
+    ;((:sending-request)
+    ; )
+    ;((:request-sent n)
+    ; )
+    ;((:response-received n)
+    ; )
+    ;((:closing-connection)
+    ; )
+    ;((:connection-closed)
+    ; )
+    ;((:handle-created hinternet)
+    ; )
+    ;((:handle-closing hinternet)
+    ; )
     ))
 
 (defun emit (event request &rest args)
@@ -125,6 +157,6 @@
 (define-event :close)
 
 
-(provide "http-client/base/events")
+(provide "http-client/async/events")
 
 ;;; End

@@ -7,44 +7,71 @@
 ## SYNOPSIS
 
 ```lisp
-(require "http-client")
+;;; xyzzy lisp REPL
+user> (require "http-client")
+t
 
-(defpackage :your-app
-  (:use
-   :lisp :editor
-   :http-client
-   ))
+user> (in-package :http-client)
+#<package: http-client.api>
 
-(in-package :your-app)
+;; 基本的に非同期で future オブジェクトを返します
+http-client.api> (setf r (http-get "http://www.google.com/search"
+                                   :query '(:hl "ja" :lr "lang_ja" :ie "UTF-8" :oe "Shift_JIS" :num 50
+                                            :q "xyzzy 読み方")
+                                   :encoding *encoding-utf8n*))
+#S(http-client ready-state :uninitialized uri nil status-code nil status-text nil ...)
 
-(defun http-download-async (url localfile callback)
-  (let ((out (open localfile :direction :output :encoding :binary))
-        (total 0))
-    (http-get url nil
-              :sink (make-general-output-stream
-                     #'(lambda (chunk)
-                         (incf total (length chunk))
-                         (message "Download ~:D bytes" total)
-                         (princ chunk out)))
-              :flusher #'(lambda (sink headers)
-                           (close out))
-              :async t
-              :oncomplete #'(lambda (status headers _)
-                              (funcall callback url localfile nil))
-              :onerror #'(lambda (err)
-                           (funcall callback url localfile err))
-              )))
+;; 結果を取得しようとした時点でレスポンスを待ちます
+http-client.api> (http-request-uri r)
+"http://www.google.com/search?hl=ja&lr=lang_ja&ie=UTF-8&oe=Shift_JIS&num=50&q=xyzzy%20%E8%AA%AD%E3%81%BF%E6%96%B9"
 
-(http-download-async "http://www.jsdlab.co.jp/~kamei/cgi-bin/download.cgi"
-                     "xyzzy-0.2.2.235.lzh"
-                     #'(lambda (url localfile err)
-                         (if err
-                             (msgbox "ダウンロードが失敗しました。~%URL: ~A~%File: ~A~%Error: ~A"
-                                     url localfile err)
-                           (msgbox "ダウンロードが完了しました。~%URL: ~A~%File: ~A~%MD5: ~A"
-                                   url localfile
-                                   (with-open-file (s localfile :encoding :binary)
-                                     (si:md5 s))))))
+http-client.api> (http-request-header-alist r)
+(("User-Agent" . "xyzzy/0.2.2.235") ("Host" . "www.google.com") ...)
+
+http-client.api> (http-response-status r)
+200
+
+http-client.api> (http-response-status-text r)
+"OK"
+
+http-client.api> (http-response-header-alist r)
+(("Content-Type" . "text/html; charset=Shift_JIS") ("Date" . "Wed, 01 Feb 2012 07:09:23 GMT") ...)
+
+http-client.api> (http-response-result r)
+"<!doctype html> ..."
+
+;; receiver に http-file-receiver を指定することでレスポンス・ボディをファイルに
+;; 出力することができます。
+http-client.api> (defun http-download (uri localfile)
+                   (http-get uri
+                             :receiver (http-file-receiver localfile)
+                             :oncomplete #'(lambda (fullpath status headers uri)
+                                             (msgbox "Download OK~%URL: ~A~%File: ~A"
+                                                     uri fullpath))
+                             :onerror #'(lambda (err) (msgbox "Error: ~A" err))
+                             :onabort #'(lambda (err) (msgbox "Abort: ~A" err))
+                             ))
+http-download
+
+http-client.api> (http-download "http://www.jsdlab.co.jp/~kamei/cgi-bin/download.cgi"
+                                "xyzzy-0.2.2.235.lzh")
+#S(http-client ready-state :uninitialized uri nil status-code nil status-text nil ...)
+
+;; receiver に http-buffer-receiver を指定することでレスポンス・ボディをバッファに
+;; 出力することができます。
+http-client.api> (defun find-uri (uri)
+                   (interactive "sURL: ")
+                   (http-get uri
+                             :receiver (http-buffer-receiver uri)
+                             :oncomplete #'(lambda (buffer status headers uri)
+                                             (pop-to-buffer buffer)
+                                             (refresh-screen))
+                             :onerror #'(lambda (err) (msgbox "Error: ~A" err))
+                             :onabort #'(lambda (err) (msgbox "Abort: ~A" err))
+                             ))
+find-uri
+
+http-client.api> (find-uri "http://goo.gl/bgggL")
 ```
 
 
@@ -58,18 +85,16 @@ xl-winhttp は WinHTTP の API をそのまま提供するという方針であ�
 
 http-client は xl-winhttp をラップし利用しやすい API を提供します。
 
-また、http-client では API の学習コストが最小になるように、
-[Gauche の rfc.http モジュール](http://practical-scheme.net/gauche/man/gauche-refj_146.html)
-の仕様を参考にして実装しています。
-
 
 ## INSTALL
 
-1. [NetInstaller](http://www7a.biglobe.ne.jp/~hat/xyzzy/ni.html)
+1. [NetInstaller] で ansi-loop, ansify をインストールします。
    で http-client, xl-winhttp, xl-alexandria, ansi-loop, ansify, setf-values をインストールします。
 
 2. http-client はライブラリであるため自動的にロードはされません。
    必要な時点で require してください。
+
+  [NetInstaller]: http://www7a.biglobe.ne.jp/~hat/xyzzy/ni.html
 
 
 ## REFERENCE
@@ -81,13 +106,9 @@ http-client は xl-winhttp をラップし利用しやすい API を提供しま
 
 * :accept */* は Accept ヘッダが指定されていない場合のみ設定する
   - `*default-accept-header*`
-* 非同期処理完了時に request と connection の close
 * http-error
   - winhttp-condition をラップする
 * イベント追加?
-  - onabort
-  - onresponse
-    - レスポンスヘッダを受信した時点で呼び出す
   - onprogress (type send-or-write-length content-length)
     - 進捗状況のコールバック
 * content-transfer-encoding で binary 以外の対応
@@ -100,10 +121,10 @@ http-client は xl-winhttp をラップし利用しやすい API を提供しま
 
 なし。
 
-要望やバグは
-[GitHub Issues](http://github.com/miyamuko/http-client/issues) か
-[@miyamuko](http://twitter.com/home?status=%40miyamuko%20%23xyzzy%20http-client%3a%20)
-まで。
+要望やバグは [GitHub Issues] か [@miyamuko] まで。
+
+  [GitHub Issues]: http://github.com/miyamuko/http-client/issues
+  [@miyamuko]: http://twitter.com/home?status=%40miyamuko%20%23xyzzy%20http-client%3a%20
 
 
 ## AUTHOR

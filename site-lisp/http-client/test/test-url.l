@@ -1,4 +1,4 @@
-; -*- mode: lisp; package: http-client.test.url; encoding: shift_jis -*-
+; -*- mode: lisp; package: http-client.base.test.url; encoding: shift_jis -*-
 
 ;; Copyright (c) 2012 MIYAMUKO Katsuyuki.
 ;;
@@ -28,61 +28,22 @@
 (require "http-client")
 (require "http-client/test/helper")
 
-(defpackage :http-client.test.url
+(defpackage :http-client.base.test.url
   (:use :lisp :editor
    :lisp-unit
-   :http-client
+   :http-client.base
    )
   )
 
-(in-package :http-client.test.url)
+(in-package :http-client.base.test.url)
 
-(remove-all-tests :http-client.test.url)
+(remove-all-tests :http-client.base.test.url)
 
-(define-test http-client/url/create-url
-  (assert-equal "http://www.google.co.jp"
-      (http-client::create-url "www.google.co.jp" nil))
-  (assert-equal "http://www.google.co.jp:81"
-      (http-client::create-url "www.google.co.jp:81" nil))
-  (assert-equal "http://www.google.co.jp:81"
-      (http-client::create-url "http://www.google.co.jp:81" nil))
+(define-test add-query-params
+  (fail))
 
-  (assert-equal "https://www.google.co.jp"
-      (http-client::create-url "www.google.co.jp" nil :secure t))
-  (assert-equal "https://www.google.co.jp:81"
-      (http-client::create-url "www.google.co.jp:81" nil :secure t))
-  (assert-equal "https://www.google.co.jp:81"
-      (http-client::create-url "https://www.google.co.jp:81" nil :secure t))
+(define-test add-query-string
+  (fail))
 
-  (assert-equal "https://www.google.co.jp:81"
-      (http-client::create-url "https://www.google.co.jp:81" nil :secure nil))
-  (assert-equal "http://www.google.co.jp:81"
-      (http-client::create-url "http://www.google.co.jp:81" nil :secure t))
-
-  (assert-equal "http://www.google.co.jp/search"
-      (http-client::create-url "www.google.co.jp" "search"))
-  (assert-equal "http://www.google.co.jp/search"
-      (http-client::create-url "www.google.co.jp" "/search"))
-  (assert-equal "http://www.google.co.jp/search"
-      (http-client::create-url "www.google.co.jp" '("/search")))
-  (assert-equal "http://www.google.co.jp/search?q=xyzzy&num=30"
-      (http-client::create-url "www.google.co.jp" '("/search" (q "xyzzy") (num 30))))
-  (assert-equal "http://www.google.co.jp/search/fuga?q=xyzzy&num=30"
-      (http-client::create-url "www.google.co.jp/search" '("/fuga" (q "xyzzy") (num 30))))
-  (assert-equal "http://www.google.co.jp/search/fuga?q=xyzzy&num=30"
-      (http-client::create-url "www.google.co.jp/search/" '("fuga" (q "xyzzy") (num 30))))
-  (assert-equal "http://www.google.co.jp/search/?fuga=hoge&q=xyzzy&num=30"
-      (http-client::create-url "www.google.co.jp/search/" '("?fuga=hoge" (q "xyzzy") (num 30))))
-
-  (assert-equal "http://www.google.co.jp/search?q=%82%A0&num=30"
-      (http-client::create-url "www.google.co.jp" '("/search" (q "‚ ") (num 30))))
-  (assert-equal "http://www.google.co.jp/search?q=%E3%81%82&num=30"
-      (http-client::create-url "www.google.co.jp" '("/search" (q "‚ ") (num 30))
-                               :encoding *encoding-utf8n*))
-
-  (assert-equal "http://www.google.co.jp/search?fuga=hoge&q=xyzzy&num=30"
-      (http-client::create-url "http://www.google.co.jp/search" '("?fuga=hoge" (q "xyzzy") (num 30))))
-
-  (assert-equal "http://www.google.co.jp/search?q=xyzzy&num=30"
-      (http-client::create-url "http://www.google.co.jp/sea" '("rch" (q "xyzzy") (num 30))))
-  )
+(define-test url-encode-params
+  (fail))

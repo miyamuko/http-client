@@ -1,4 +1,4 @@
-; -*- mode: lisp; package: http-client.api; encoding: shift_jis -*-
+; -*- mode: lisp; package: http-client.base; encoding: shift_jis -*-
 
 ;; Copyright (c) 2012 MIYAMUKO Katsuyuki.
 ;;
@@ -24,40 +24,18 @@
 ;;; Code:
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (require "http-client/api/package")
+  (require "http-client/base/package")
   )
 
-(in-package :http-client.api)
+(in-package :http-client.base)
+
+(export '(add-query-params
+          add-query-string
+          url-encode-params
+          ))
 
 (defparameter *default-literal-chars* "0-9A-Za-z._~-")
 
-
-(defun create-url (server request-uri &key encoding secure)
-  (let (scheme path params)
-    (etypecase request-uri
-      (null nil)
-      (string
-       (setf path request-uri))
-      (list
-       (setf path (car request-uri)
-             params (cdr request-uri))))
-    ;; server Ç… http://localhost Ç»Ç«ÇéwíËÇµÇΩèÍçá
-    (when (string-match "\\`\\(?:\\([a-z]+\\)://\\)?\\([^/]+\\)\\(.*\\)\\'" server)
-      (setf scheme (match-string 1)
-            server (match-string 2)
-            path (concat (match-string 3) path)
-            ))
-    (winhttp:create-url scheme nil nil server nil
-                        (add-query-params path params :encoding encoding)
-                        nil secure)))
-
-(defun compose-query (path-and-params encoding)
-  (etypecase path-and-params
-    (null nil)
-    (string path-and-params)
-    (list
-     (add-query-params (car path-and-params) (cdr path-and-params)
-                       :encoding encoding))))
 
 ;; from xml-http-request/util.l
 
@@ -76,6 +54,7 @@
             query-string)))
 
 (defun url-encode-params (data &optional encoding literal-chars)
+  (setf data (winhttp.internal::to-alist data))
   (etypecase data
     (null nil)
     (string data)
@@ -93,7 +72,7 @@
     (list
      (format nil "~A~^=~A"
              (url-encode-value (car data) encoding literal-chars)
-             (url-encode-value (cadr data) encoding literal-chars)
+             (url-encode-value (cdr data) encoding literal-chars)
              ))))
 
 (defun url-encode-value (v &optional encoding literal-chars)
@@ -106,6 +85,6 @@
                        nil literal-chars)))
 
 
-(provide "http-client/api/url")
+(provide "http-client/base/url")
 
 ;;; End

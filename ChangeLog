@@ -1,3 +1,26 @@
+2012-02-01  MIYAMUKO Katsuyuki
+
+	* 仕様と実装を大きく変更というか再実装した
+	- 非同期 API をデフォルトにした
+	- Ctrl-g で止めれるように非同期 API をベースに同期 API を実装した
+	- 戻り値は future オブジェクトにした
+	  - 結果を取得しようとした時点でレスポンスを待つ
+	  - http-response-wait で明示的に待つことも可能
+	- server と path を別々に指定するのをやめて、URL で指定するようにした
+	- ヘッダは :headers 引数で指定するようにした
+	- sink / flusher をやめて receiver を追加
+	  - receiver は Gauche と違って chunk を受け取る関数を返す関数である
+	  - (status-code, header-alist, total-length) -> ((chunk) -> a)
+	- :request-encoding を :encoding に変更
+	- :auth, :proxy-auth を追加
+	- :wait t を指定すると同期 API になるが戻り値は future オブジェクトを返す
+	  - http-response-result などで値を取得する
+	  - http-response-values で (body, status-code, header-alist, uri) を
+	    多値で取得可能する
+	    - uri はリダイレクト後の URL
+	- :oncomplete の引数は (body, status-code, header-alist, uri) とした
+	- :onabort を追加
+
 2012-01-25  MIYAMUKO Katsuyuki
 
 	* 非同期処理用の API を追加

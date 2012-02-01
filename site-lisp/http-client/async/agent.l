@@ -1,4 +1,4 @@
-; -*- mode: lisp; package: http-client.test.api-http-get; encoding: shift_jis -*-
+; -*- mode: lisp; package: http-client.async; encoding: shift_jis -*-
 
 ;; Copyright (c) 2012 MIYAMUKO Katsuyuki.
 ;;
@@ -23,45 +23,28 @@
 
 ;;; Code:
 
-(require "lisp-unit")
-
-(require "json")
-(require "http-client")
-(require "http-client/test/helper")
-
-(defpackage :http-client.test.api-http-get
-  (:use :lisp :editor
-   :lisp-unit
-   :json
-   :http-client
-   :http-client.test.helper
-   )
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (require "http-client/async/package")
   )
 
-(in-package :http-client.test.api-http-get)
+(in-package :http-client.async)
 
-(remove-all-tests :http-client.test.api-http-get)
+(export '(get-session-create
+          get-connection-create
+          ))
 
-(define-test http-client/api-http-user-agent/get
-  (multiple-value-bind (body status headers)
-      (let ((*http-user-agent* "hoge"))
-        (http-get "http://localhost:3000/snoop"
-                  :async nil))
-    (let ((json (json-decode body)))
-      (assert-equal "hoge"
-          ($ json "headers" "user-agent"))
-      )
-    )
-  )
+(defvar *session* (make-hash-table :test #'equalp))
 
-(define-test http-client/api-http-user-agent/post
-  (multiple-value-bind (body status headers)
-      (http-post "http://localhost:3000/snoop" nil
-                 :headers `(:User-Agent "fuga")
-                 :async nil)
-    (let ((json (json-decode body)))
-      (assert-equal "fuga"
-          ($ json "headers" "user-agent"))
-      )
-    )
-  )
+(defun get-session-create (&rest args)
+  (or (gethash args *session*)
+      (setf (gethash args *session*)
+            (apply 'winhttp:open args))))
+
+(defun get-connection-create (&rest args)
+  ;; TODO connection pool
+  (apply 'winhttp:connect args))
+
+
+(provide "http-client/async/agent")
+
+;;; End

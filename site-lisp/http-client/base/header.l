@@ -1,4 +1,4 @@
-; -*- mode: lisp; package: http-client.api; encoding: shift_jis -*-
+; -*- mode: lisp; package: http-client.base; encoding: shift_jis -*-
 
 ;; Copyright (c) 2012 MIYAMUKO Katsuyuki.
 ;;
@@ -24,43 +24,33 @@
 ;;; Code:
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (require "http-client/api/package")
+  (require "http-client/base/package")
+  (require "http-client/base/utils")
   )
 
-(in-package :http-client.api)
+(in-package :http-client.base)
 
-(defparameter *http-user-agent* (format nil "xyzzy.http/~A" (software-version)))
+(export '(add-default-header
+          content-type-header-value
+          format-form-data-header
+          raw-headers->text
+          raw-headers->alist
+          ))
+
 (defparameter *content-type-form-urlencoded* "application/x-www-form-urlencoded")
 (defparameter *content-type-form-data* "multipart/form-data; boundary=")
-(defparameter *default-content-type* "application/octet-stream")
-
-(defun query-response-header-alist (request)
-  (merge-header-alist
-   (parse-raw-headers (winhttp:query-response-header request :raw-headers))))
-
-(defun merge-header-alist (alist)
-  (loop with r
-    for (k . v) in alist
-    for key = (string-downcase k)
-    do (if (assoc key r :test #'equal)
-           (appendf (cdr (assoc key r :test #'equal)) (list v))
-         (push (list key v) r))
-    finally (return (nreverse r))))
-
-(defun add-content-type-header (request &key urlencoded form-data boundary)
-  (add-default-header request :content-type
-                      (content-type-header-value :urlencoded urlencoded
-                                                 :form-data form-data
-                                                 :boundary boundary)))
-
-(defun content-type-header-value (&key urlencoded form-data boundary)
-  (if urlencoded
-      *content-type-form-urlencoded*
-    (concat *content-type-form-data* boundary)))
 
 (defun add-default-header (request header value)
-  (unless (winhttp:query-request-header request header)
+  (when (and header value
+             (not (winhttp:query-request-header request header)))
     (winhttp:add-request-header request header value)))
+
+(defun content-type-header-value (&key urlencoded form-data boundary)
+  (cond (urlencoded
+         *content-type-form-urlencoded*)
+        (form-data
+         (concat *content-type-form-data* boundary))
+        ))
 
 (defun format-form-data-header (name filename content-type content-transfer-encoding header-plist)
   (let (r)
@@ -77,7 +67,22 @@
     (format nil "~{~A\r\n~}\r\n" (nreverse r))
     ))
 
+(defun raw-headers->text (raw-headers)
+  (substitute #\LFD #\NUL raw-headers))
 
-(provide "http-client/api/header")
+(defun raw-headers->alist (raw-headers)
+  ;; 最初の要素は HTTP ステータスなどなので cdr する
+  (remove-if #'null (cdr (mapcar #'split-field (split-header raw-headers)))))
+
+(defun split-header (raw-headers)
+  (when raw-headers
+    (split-string raw-headers #\NUL)))
+
+(defun split-field (header)
+  (when (and header (string-matchp "^\\([^:]+\\):\\(.+\\)$" header))
+    (cons (strip (match-string 1)) (strip (match-string 2)))))
+
+
+(provide "http-client/base/header")
 
 ;;; End

@@ -39,9 +39,8 @@
        :copy-file
        :featurep
       )
-      )
-    (ansify::install :http-client.base))
-  )
+      )))
+(ansify::install :http-client.base)
 
 
 (provide "http-client/base/package")

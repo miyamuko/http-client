@@ -29,32 +29,21 @@
 
 (in-package :http-client.base)
 
-(export '(values-plist
-          parse-raw-headers
+(export '(make-buffer
+          values-plist
           encode
           errbox
+          string-byte-size
           ))
+
+(defun make-buffer (&optional (size winhttp:+default-write-buffer-size+))
+  (make-vector size :element-type 'character :fill-pointer 0))
 
 (defun values-plist (plist keys)
   (values-list
    (mapcar #'(lambda (k)
                (getf plist k))
            keys)))
-
-
-(defun parse-raw-headers (raw-headers)
-  (remove-if #'null (mapcar #'split-field (split-header raw-headers))))
-
-(defun split-header (raw-headers)
-  (when raw-headers
-    (split-string raw-headers #\NUL)))
-
-(defun split-field (header)
-  (when (and header (string-matchp "^\\([^:]+\\):\\(.+\\)$" header))
-    (cons (strip (match-string 1)) (strip (match-string 2)))))
-
-(defun strip (str)
-  (string-trim " \t\r\n\f" str))
 
 (defun encode (v encoding)
   (typecase v
@@ -66,6 +55,12 @@
 
 (defun errbox (fmt &rest args)
   (message-box (apply #'format nil fmt args) nil '(:ok :exclamation)))
+
+(defun string-byte-size (str)
+  (1- (si:chunk-size (si:make-string-chunk str))))
+
+(defun strip (str)
+  (string-trim " \t\r\n\f" str))
 
 
 (provide "http-client/base/utils")

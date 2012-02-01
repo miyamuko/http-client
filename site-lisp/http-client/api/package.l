@@ -28,16 +28,17 @@
   (require "ansi-loop")
   (require "xl-alexandria")
   (require "xl-winhttp")
-  (require "http-client/base")
+  (require "http-client/async")
 
   (unless (find-package :http-client.api)
     (defpackage :http-client.api
-      (:nicknames :http-client :rfc.http)
+      (:nicknames :http-client)
       (:use
        :lisp
        :editor
        :alexandria
        :http-client.base
+       :http-client.async
        )
       (:shadowing-import-from :lisp
        :copy-file
@@ -47,18 +48,8 @@
        :loop
        :loop-finish
        )
-      )
-    (ansify::install :http-client.api))
-  )
-
-(in-package :http-client.api)
-
-(export '(;; from http-client.base
-          http-request-abort
-          http-request-aborted-p
-          http-request-completed-p
-          http-request-waiting-p
-          ))
+      )))
+(ansify::install :http-client.api)
 
 
 (provide "http-client/api/package")
