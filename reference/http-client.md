@@ -4,21 +4,44 @@
     * [http-client.api](#http-client.api)
   * [VARIABLES](#variables)
     * [\*http-user-agent\*](#*http-user-agent*)
+  * [STRUCTS](#structs)
+    * [http-client](#http-client)
   * [FUNCTIONS](#functions)
-    * [http-get](#http-get)
-    * [http-head](#http-head)
-    * [http-post](#http-post)
-    * [http-put](#http-put)
-    * [http-delete](#http-delete)
-    * [http-request](#http-request)
-    * [http-request-abort](#http-request-abort)
-    * [http-request-aborted-p](#http-request-aborted-p)
-    * [http-request-completed-p](#http-request-completed-p)
-    * [http-request-waiting-p](#http-request-waiting-p)
-    * [http-compose-query](#http-compose-query)
-    * [http-compose-form-data](#http-compose-form-data)
-    * [http-secure-connection-available?](#http-secure-connection-available?)
-    * [http-client-version](#http-client-version)
+    * request API
+      * [http-get](#http-get)
+      * [http-head](#http-head)
+      * [http-post](#http-post)
+      * [http-put](#http-put)
+      * [http-delete](#http-delete)
+      * [http-request](#http-request)
+    * receiver API
+      * [http-string-receiver](#http-string-receiver)
+      * [http-file-receiver](#http-file-receiver)
+      * [http-buffer-receiver](#http-buffer-receiver)
+      * [http-stream-chunk-receiver](#http-stream-chunk-receiver)
+      * [http-stream-line-receiver](#http-stream-line-receiver)
+      * [http-null-receiver](#http-null-receiver)
+    * request control
+      * [http-request-abort](#http-request-abort)
+      * [http-response-wait](#http-response-wait)
+      * [http-request-aborted-p](#http-request-aborted-p)
+      * [http-request-completed-p](#http-request-completed-p)
+      * [http-request-waiting-p](#http-request-waiting-p)
+    * accessors
+      * [http-request-uri](#http-request-uri)
+      * [http-request-header](#http-request-header)
+      * [http-request-header-alist](#http-request-header-alist)
+      * [http-response-status](#http-response-status)
+      * [http-response-status-text](#http-response-status-text)
+      * [http-response-header](#http-response-header)
+      * [http-response-header-alist](#http-response-header-alist)
+      * [http-response-result](#http-response-result)
+      * [http-response-values](#http-response-values)
+    * utilities
+      * [http-compose-query](#http-compose-query)
+      * [http-compose-form-data](#http-compose-form-data)
+      * [http-client-version](#http-client-version)
+
 
 ----
 
@@ -30,23 +53,8 @@
 このパッケージは、[RFC2616 "Hypertext Transfer Protocol - HTTP/1.1"](http://tools.ietf.org/html/rfc2616)
 で定義されている HTTP/1.1 に対する簡単なクライアント API を提供します。
 
-このパッケージは [Gauche の rfc.http モジュール](http://practical-scheme.net/gauche/man/gauche-refj_146.html)
-とほぼ互換性があります。
-
-Gauche の rfc.http モジュールとの非互換は以下のとおりです。
-
-  * 任意の HTTP メソッドを送信できるように [http-request](#http-request) が利用可能です
-  * `SERVER` に完全な URL を指定可能です
-  * `:proxy` を指定しない場合は、WinHTTP のデフォルト設定が利用されます
-  * `:content-type` でパラメータごとに文字エンコーディングを指定できません
-  * `:content-type` を指定しない場合は、Content-Type ヘッダは送信されません
-  * `:content-transfer-encoding` は binary のみしか指定できません
-  * `:content-transfer-encoding` を指定しない場合は、Content-Transfer-Encoding ヘッダは送信されません
-  * 非同期モードをサポートします (`:async`, `:oncomplete`, `:onerror`)
-
 パッケージのニックネームは以下のとおりです。
 
-  * `rfc.http`
   * `http-client`
 
 
@@ -57,8 +65,8 @@ Gauche の rfc.http モジュールとの非互換は以下のとおりです。
 
 ### Variable: <a name="*http-user-agent*"><em>\*http-user-agent\*</em></a>
 
-user-agent ヘッダに渡される値のデフォルト値を指定するスペシャル変数です。
-デフォルトの値は xyzzy.http/* (*部分は xyzzy のバージョン) になっています。
+User-Agent ヘッダに渡される値のデフォルト値を指定するスペシャル変数です。
+デフォルトの値は xyzzy/(xyzzy のバージョン) になっています。
 
 各アプリケーションは適切な値を設定するようにしてください。
 
@@ -67,107 +75,71 @@ user-agent ヘッダに渡される値のデフォルト値を指定するスペ
 ## <a name="functions">FUNCTIONS</a>
 
 
-### Function: <a name="http-get"><em>http-get</em></a> <i>`SERVER` `REQUEST-URI` &rest `HEADERS` &key `:request-encoding` `:proxy` `:sink` `:flusher` `:no-redirect` `:secure` `:async` `:oncomplete` `:onerror` &allow-other-keys</i>
+### Function: <a name="http-get"><em>http-get</em></a> <i>`URI` &key `:headers` `:query` `:encoding` `:auth` `:proxy-auth` `:proxy` `:no-redirect` `:receiver` `:wait` `:oncomplete` `:onabort` `:onerror`</i>
 
 HTTP GET リクエストを送信します。
 
 詳細は [http-request](#http-request) を参照してください。
 
 
-### Function: <a name="http-head"><em>http-head</em></a> <i>`SERVER` `REQUEST-URI` &rest `HEADERS` &key `:request-encoding` `:proxy` `:no-redirect` `:secure` `:async` `:oncomplete` `:onerror` &allow-other-keys</i>
+### Function: <a name="http-head"><em>http-head</em></a> <i>`URI` &key `:headers` `:query` `:encoding` `:auth` `:proxy-auth` `:proxy` `:no-redirect` `:receiver` `:wait` `:oncomplete` `:onabort` `:onerror`</i>
 
 HTTP HEAD リクエストを送信します。
 
 詳細は [http-request](#http-request) を参照してください。
 
 
-### Function: <a name="http-post"><em>http-post</em></a> <i>`SERVER` `REQUEST-URI` `BODY` &rest `HEADERS` &key `:request-encoding` `:proxy` `:sink` `:flusher` `:no-redirect` `:secure` `:async` `:oncomplete` `:onerror` &allow-other-keys</i>
+### Function: <a name="http-post"><em>http-post</em></a> <i>`URI` `BODY` &key `:headers` `:query` `:encoding` `:auth` `:proxy-auth` `:proxy` `:no-redirect` `:receiver` `:wait` `:oncomplete` `:onabort` `:onerror`</i>
 
 HTTP POST リクエストを送信します。
 
 詳細は [http-request](#http-request) を参照してください。
 
 
-### Function: <a name="http-put"><em>http-put</em></a> <i>`SERVER` `REQUEST-URI` `BODY` &rest `HEADERS` &key `:request-encoding` `:proxy` `:sink` `:flusher` `:secure` `:async` `:oncomplete` `:onerror` &allow-other-keys</i>
+### Function: <a name="http-put"><em>http-put</em></a> <i>`URI` `BODY` &key `:headers` `:query` `:encoding` `:auth` `:proxy-auth` `:proxy` `:no-redirect` `:receiver` `:wait` `:oncomplete` `:onabort` `:onerror`</i>
 
 HTTP PUT リクエストを送信します。
 
 詳細は [http-request](#http-request) を参照してください。
 
 
-### Function: <a name="http-delete"><em>http-delete</em></a> <i>`SERVER` `REQUEST-URI` &rest `HEADERS` &key `:request-encoding` `:proxy` `:sink` `:flusher` `:secure` `:async` `:oncomplete` `:onerror` &allow-other-keys</i>
+### Function: <a name="http-delete"><em>http-delete</em></a> <i>`URI` &key `:headers` `:query` `:encoding` `:auth` `:proxy-auth` `:proxy` `:no-redirect` `:receiver` `:wait` `:oncomplete` `:onabort` `:onerror`</i>
 
 HTTP DELETE リクエストを送信します。
 
 詳細は [http-request](#http-request) を参照してください。
 
 
-### Function: <a name="http-request"><em>http-request</em></a> <i>`METHOD` `SERVER` `REQUEST-URI` `BODY` &rest `HEADERS` &key `:request-encoding` `:proxy` `:sink` `:flusher` `:no-redirect` `:secure` `:async` `:oncomplete` `:onerror` &allow-other-keys</i>
+### Function: <a name="http-request"><em>http-request</em></a> <i>`METHOD` `URI` `BODY` &key `:headers` `:query` `:encoding` `:auth` `:proxy-auth` `:proxy` `:no-redirect` (`:receiver` (http-string-receiver)) `:wait` `:oncomplete` `:onabort` `:onerror`</i>
 
-`SERVER` に `METHOD` と `REQUEST-URI` で指定されたリクエストを送りサーバの応答を返します。
+`URI` に `METHOD` で指定されたリクエストを送信して future オブジェクトを返します。
 
 #### 引数
 
-  * `SERVER` 引数は文字列で HTTP サーバ名を指定します。
+  * `METHOD`: 送信する HTTP メソッドを指定します。
 
-    サーバ名にはスキーム、ポート番号、およびパスを付加できます。
+  * `URI`: URL を指定します。
 
-    ```
-    "w3c.org"
-    "mycompany.com:8080"
-    "http://www.google.co.jp/search"
-    ```
+  * `BODY`: 送信する HTTP レスポンス・ボディを文字列かリストで指定します。
 
-  * `REQUEST-URI` 引数は文字列かリストです。
+    文字列の場合はそのまま送信します。
+    リストの場合は multipart/form-data 形式にエンコードして送信します。
 
-    文字列の場合、RFC2616 で規定されているリクエスト URI と解釈されます。
-    通常これは HTTP URL のパス部分です。文字列はそのままサーバに渡されるので、
-    呼び出し側で必要な文字コード変換や url エンコーディングを行う必要があります。
+    リストの要素は `(name value)` のような名前と値のリスト、
+    または `(name :file filename :content-type type)` のように
+    名前の後に plist を付加したものです。
 
-    `REQUEST-URI` がリストの場合は、次の形式でなければなりません。
+    例:
 
     ```lisp
-    (path (name value) ...)
+    '(("submit" "OK"
+      ("filename" :file "icon.png" :content-type "image/png" :content-transfer-encoding "binary"))
     ```
 
-    ここで `path` はリクエスト URI のパスコンポーネントまでを指定する文字列です。
-    与えられた `name` と `value` の alist から、http リクエスト手続きは HTML4 で定められた
-    application/x-www-form-urlencoded 形式のクエリ文字列を構成し、`path` にアペンドします。
-
-    例えば次のリクエストは同じ効果を持ちます。
-    二番目以降の呼び出しでは url エスケープが自動的に行われることに注目してください。
-
-    ```lisp
-    (http-get "https://www.google.co.jp/search?q=xyzzy%20%93%C7%82%DD%95%FB" nil)
-    (http-get "https://www.google.co.jp/search" '(nil (q "xyzzy 読み方")))
-    (http-get "https://www.google.co.jp" '("/search" (q "xyzzy 読み方")))
-    (http-get "www.google.co.jp" '("/search" (q "xyzzy 読み方")) :secure t)
-    ```
-
-    `:request-encoding` キーワード引数が与えられた場合、
-    `name` と `value` はまずその文字エンコーディングに変換されたのちに url エスケープされます。
-
-  * `BODY` は文字列かリストです。
-
-    文字列の場合はそのまま送られます。
-    リストの場合は multipart/form-data 形式にエンコードされて送られます。
-
-    `BODY` がリストの場合、それはパラメータ指定のリストです。
-    各パラメータ指定は、`("submit" "OK")` のような名前と値のリスト、
-    もしくは `("upload" :file "logo.png" :content-type "image/png")` のように
-    名前の後にキーワード-値リストを付加したものです。
-
-    最初の形式は使うのが簡単で、また request-uri のクエリパラメータリストと同じ形式なので
-    GET と POST でルーチンを共有したい場合にも便利でしょう。
-
-    `:request-encoding` キーワード引数が与えられた場合、
-    `name` と `value` はまずその文字エンコーディングに変換されたのちに url エスケープされます。
-
-    二番目の形式では、MIME パートの属性についてより細かな指定を行うことができます。
-    以下のキーワードが特別に扱われます。
+    plist には以下のキーワードを指定可能です。
 
     * `:value`:
-      パラメータの値を指定します。簡潔な `(name val)` 形式は `(name :value val)` の省略形です。
+      パラメータの値を指定します。`(name val)` 形式は `(name :value value)` の省略形です。
 
     * `:file`:
       指定された名前のファイルの中身をパラメータの値として挿入します。
@@ -182,15 +154,68 @@ HTTP DELETE リクエストを送信します。
       送信時のエンコーディングを指定します (binary のみをサポート)。
       指定が無ければ Content-Transfer-Encoding ヘッダは送信されません。
 
-  * `:request-encoding`
+    `:encoding` キーワード引数が与えられた場合、
+    `name` と `value` はまずその文字エンコーディングに変換されたのちに url エスケープされます。
 
-    `REQUEST-URI` や `BODY` がリストで与えられた場合、パラメータの名前や値は
+  * `:headers`
+
+    送信時の HTTP ヘッダを alist または plist で指定します。
+
+    ```lisp
+    http-client.api> (http-get "https://twitter.com/"
+                               :headers '(:Accept-Language "en"))
+    ```
+
+  * `:query`: URL パラメータを文字列かリストで指定します。
+
+    文字列の場合そのまま `URL` に追加されて送信されます。
+    呼び出し側で必要な文字コード変換や url エンコーディングを行う必要があります。
+
+    リストの場合は、`name` と `value` を alist または plist で指定します。
+
+    `name` と `value` の alist/plist から、application/x-www-form-urlencoded 形式の
+    クエリ文字列を構成し `URL` に追加します。
+
+    例えば次のリクエストは同じ効果を持ちます。
+    二番目以降の呼び出しでは url エスケープが自動的に行われることに注目してください。
+
+    ```lisp
+    (http-get "https://www.google.co.jp/search?q=xyzzy%20%93%C7%82%DD%95%FB")
+    (http-get "https://www.google.co.jp/search" :query "q=xyzzy%20%93%C7%82%DD%95%FB")
+    (http-get "https://www.google.co.jp/search" :query '(:q "xyzzy 読み方"))
+    (http-get "https://www.google.co.jp/search" :query '(("q" . "xyzzy 読み方")))
+    ```
+
+    `:encoding` キーワード引数が与えられた場合、
+    `name` と `value` はまずその文字エンコーディングに変換されたのちに url エスケープされます。
+
+  * `:encoding`
+
+    `:query` や `BODY` がリストで与えられた場合、パラメータの名前や値は
     まずこの引数で指定される文字エンコーディングへと変換され、
     その後、application/x-www-form-urlencoded や multipart/form-data MIME 形式に
     したがったエンコーディングが行われます。
 
-    `REQUEST-URI` や `BODY` に文字列を与えた場合は、文字エンコーディング変換は行われません。
+    `:query` や `BODY` に文字列を与えた場合は、文字エンコーディング変換は行われません。
     呼び出し側で望みの文字コードにあらかじめ変換しておいてください。
+
+  * `:auth`
+
+    サーバに対する認証情報をリストで指定します。
+
+    ```lisp
+   :auth '(:basic "user" "pass")
+   :auth '(:digest "user" "pass")
+    ```
+
+  * `:proxy-auth`
+
+    プロキシに対する認証情報をリストで指定します。
+
+    ```lisp
+   :proxy-auth '(:basic "user" "pass")
+   :proxy-auth '(:digest "user" "pass")
+    ```
 
   * `:proxy`
 
@@ -199,154 +224,234 @@ HTTP DELETE リクエストを送信します。
 
   * `:no-redirect`
 
-    真の値が与えられた場合、リダイレクションには従わなくなります。
-    すなわち、手続きは"3xx"のメッセージをそのまま返します。
+    `non-nil` が与えられた場合、リダイレクションには従わなくなります。
 
-  * `:secure`
+  * `:receiver`
 
-    真の値が与えられた場合、セキュアな接続 (https) を使います。
-    `SERVER` にスキーマが指定された場合はスキーマの指定が優先されます。
+    レスポンス・ボディがどのように扱われるかをカスタマイズできます。
+    `:receiver` には「1 引数を受け取る関数」を返す、3 引数を受け取る関数を指定します。
 
-    ```lisp
-    http-client.api> (http-get "https://www.google.co.jp"
-                               '("/search" (q "xyzzy"))
-                               :secure nil :async t)
-    #S(xl-winhttp.api:request description "GET /search?q=xyzzy with secure" ...)
-    ```
+    レスポンス・ヘッダを受信し終わると、`:receiver` を
+    ステータスコード、レスポンス・ヘッダ、Content-Length を指定して呼び出します。
 
-  * `:sink`, `:flusher`
+    レスポンス・ボディを受信すると、`:receiver` が返した関数を受信したメッセージ？ボディを
+    指定して呼び出します。
 
-    これらのキーワード引数によりリプライメッセージ・ボディがどのように扱われるかをカスタマイズできます。
-    `sink` には出力ストリームを、`flusher` には 2 引数を取る手続きを渡さなければなりません。
+    レスポンス・ボディの終端に到達すると、`:receiver` が返した関数に `nil` を指定して呼び出します。
+    その時の戻り値が [http-response-result](#http-response-result) の戻り値となります。
 
-    `sink` に nil を指定した場合は受信したメッセージ・ボディは捨てられます。
-    `flusher` に nil を指定した場合は何も呼び出されません。
+    `:receiver` のデフォルト値は [http-string-receiver](#http-string-receiver) です。
 
-    手続きがメッセージ・ボディを受信し始めると、`sink` へ受け取ったデータ片を書き込みます。
-    手続きがメッセージ・ボディを受信し終わると、 `flusher` に与えられた手続きが、
-    `sink` と(手続きからの 2 つ目の戻り値と同じフォーマットの)メッセージ・ヘッダ・フィールドの
-    リストとともに呼び出されます。
-    `flusher` の戻り値が、手続きからの 3 つ目の戻り値となります。
+    __See Also:__
 
-    したがって、`sink` のデフォルト値は、新しく開かれた string-output ストリームで、
-    flusher のデフォルト値は `#'(lambda (sink headers) (get-output-stream-string sink))` とも言えます。
+      * [http-string-receiver](#http-string-receiver)
+      * [http-file-receiver](#http-file-receiver)
+      * [http-buffer-receiver](#http-buffer-receiver)
+      * [http-stream-chunk-receiver](#http-stream-chunk-receiver)
+      * [http-stream-line-receiver](#http-stream-line-receiver)
+      * [http-null-receiver](#http-null-receiver)
 
-    以下のサンプルは、(とても大きい可能性のある) 文字列バッファを作らずに、
-    メッセージ・ボディを直接ファイルに保存します。
+  * `:wait`
 
-    ```lisp
-    http-client.api> (with-open-file (out "page.html" :direction :output :encoding :binary)
-                       (http-get "www.schemers.org" "/"
-                                 :sink out
-                                 :flusher #'(lambda (sink headers)
-                                              (file-length sink))))
-    "200" ;
-    (("date" "Mon, 23 Jan 2012 07:10:21 GMT")
-     ("server" "Apache/2.2.9 (Debian) mod_ssl/2.2.9 OpenSSL/0.9.8g")
-     ...)
-    5331
-    ```
+    `wait` に `non-nil` が与えられた場合、同期モードで動作します。
+    リクエストが完了するまで関数は処理を返しません。
 
-    メッセージ・ボディを受信するたびに何か処理を行いたい場合は、
-    `sink` に general-output-stream を指定します。
+  * `:oncomplete`, `:onabort`, `:onerror`
 
-    ```lisp
-    http-client.api> (http-get "www.schemers.org"
-                               "/"
-                               :sink (make-general-output-stream
-                                      #'(lambda (chunk)
-                                          (msgbox "~A" chunk)))
-                               :flusher nil)
-    "200" ;
-    (("date" "Mon, 23 Jan 2012 07:10:21 GMT")
-     ("server" "Apache/2.2.9 (Debian) mod_ssl/2.2.9 OpenSSL/0.9.8g")
-     ...)
-    nil
-    ```
+    `wait` に `nil` が与えられた場合、非同期モードで動作します。
 
-  * `:async`, `:oncomplete`, `:onerror`
-
-    `async` に真の値が与えられた場合、非同期モードで動作します。
-
-    `oncomplete` には 3 引数を取る手続きを、`onerror` には 1 引数を取る手続きを渡さなければなりません。
-    nil を指定した場合は何も呼び出されません。
+    `oncomplete` には 4 引数を取る手続きを、`onabort` および `onerror` には 1 引数を取る手続きを渡さなければなりません。
+    `nil` を指定した場合は何も呼び出されません。
 
     * `oncomplete`: リクエストが完了した場合に呼び出されます。
-      引数は同期呼び出し時の戻り値が指定されます。
-      `flusher` より後に呼び出されます。
+      引数は レスポンス・ボディ、ステータスコード、レスポンス・ヘッダ、URL です。
+      URL はリダイレクト後の URL であるため、`URI` で指定した URL と違う場合があります。
+
+    * `onabort`: リクエスト中断時に呼び出されます。
+      引数はコンディションです。
 
     * `onerror`: エラー発生時に呼び出されます。
       引数はコンディションです。
 
-    ```lisp
-    http-client.api> (http-get "www.schemers.org" "/"
-                               :sink (make-buffer-stream
-                                      (get-buffer-create "*http-get*"))
-                               :flusher nil
-                               :async t
-                               :oncomplete #'(lambda (status-code headers result)
-                                               (pop-to-buffer "*http-get*")
-                                               (html+-mode)
-                                               (refresh-screen))
-                               :onerror #'(lambda (err)
-                                            (msgbox "Error: ~A" err))
-                               )
-    #S(xl-winhttp.api:request description "GET /" ...)
-    ```
-
-  * 残りのキーワードは MIME パートのヘッダにそのまま使われます。
-
-    デフォルトで、これらの手続きはリクエストメッセージに "Host" ヘッダ・フィールドを追加するだけです。
-    他のヘッダ・フィールドを追加するためにキーワード引数を与えることができます。
-
-    ```lisp
-    http-client.api> (http-get "twitter.com" "/"
-                               :accept-language "en")
-    ```
 
 #### 戻り値
 
-同期処理の場合、手続きは 3 つの値を返します。
+戻り値は同期・非同期にかかわらず Future オブジェクトです。
 
-  * 1 つ目は、RFC2616 で定義されているステータスコードの文字列値(例えば、成功時の "200" など)です。
+`:wait` に `non-nil` を指定しない場合、API を呼び出すとすぐに制御を返します。
 
-  * 2 つ目は、パーズされたヘッダのリストで、リストの要素は(header-name value …)です。
+  * Future オブジェクトから値を取得しようとした時点で
+    まだリクエストが完了していない場合はブロックします。
+  * [http-response-wait](#http-response-wait) で明示的にリクエストの完了を待つことが可能です。
+  * リクエストが完了したかどうかは [http-request-completed-p](#http-request-completed-p)
+    で判断できます。
+  * リクエストを停止したい場合は Future オブジェクトを
+     [http-request-abort](#http-request-abort) に指定します。
 
-    `header-name` はヘッダの文字列名 (例えば、 "content-type" や "location" など) で、
-    `value` は対応する値の文字列値です。
+__See Also:__
 
-    ヘッダ名は小文字に変換されます。
-    サーバが同じ名前のヘッダを 1 つ以上返した場合は、 1 つのリストに統合されます。
-    それ以外では、2 つ目の戻り値におけるヘッダのリストの順番は、サーバの応答での順番と同じです。
+  * [http-request-uri](#http-request-uri)
+  * [http-request-header](#http-request-header)
+  * [http-request-header-alist](#http-request-header-alist)
+  * [http-response-status](#http-response-status)
+  * [http-response-status-text](#http-response-status-text)
+  * [http-response-header](#http-response-header)
+  * [http-response-header-alist](#http-response-header-alist)
+  * [http-response-result](#http-response-result)
+  * [http-response-values](#http-response-values)
+  * [http-request-completed-p](#http-request-completed-p)
+  * [http-request-waiting-p](#http-request-waiting-p)
+  * [http-request-abort](#http-request-abort)
+  * [http-response-wait](#http-response-wait)
 
-  * 3 つ目の戻り値は、サーバの応答におけるメッセージボディです。
 
-    デフォルトでは、文字列で表現されたメッセージボディそのものです。
-    サーバの応答がボディを持たない場合、3 つ目の戻り値は nil です。
+### Function: <a name="http-string-receiver"><em>http-string-receiver</em></a>
 
-    キーワード引数によって、メッセージボディがどのように扱われるかを制御できます。
-    例えば、中間的な文字列を作らずに、返されたメッセージボディを直接ファイルに格納することが出来ます。
+レスポンス・ボディを文字列で受信するための receiver です。
 
-非同期処理の場合、手続きはリクエストオブジェクトを返します。
+  * デフォルトの receiver です。
+  * [http-response-result](#http-response-result) はレスポンス・ボディを文字列で返します。
+
+__See Also:__
+
+  * [http-request](#http-request)
 
 
-### Function: <a name="http-request-abort"><em>http-request-abort</em></a> <i>`REQUEST`</i>
+### Function: <a name="http-file-receiver"><em>http-file-receiver</em></a> <i>`FILENAME` &key `:encoding` `:if-exists` `:share`</i>
 
-指定した `REQUEST` を中断します。
+レスポンス・ボディを `FILENAME` で指定したファイルに保存するための receiver です。
+受信しながらファイルに書き込むため、巨大なファイルをダウンロードする場合でもメモリを圧迫しません。
+
+  * `:encoding` のデフォルト値は `:binary` です。
+  * `:if-exists` のデフォルト値は `:new-version` です。
+  * `:share` のデフォルト値は `nil` です。
+  * [http-response-result](#http-response-result) はファイルのフルパスを文字列で返します。
+
+```lisp
+(defun http-download (uri localfile)
+  (http-get uri
+            :receiver (http-file-receiver localfile)
+            :oncomplete #'(lambda (fullpath status headers uri)
+                            (msgbox "Download OK~%URL: ~A~%File: ~A"
+                                    uri fullpath))
+            :onerror #'(lambda (err) (msgbox "Error: ~A" err))
+            :onabort #'(lambda (err) (msgbox "Abort: ~A" err))
+            ))
+```
+
+__See Also:__
+
+  * [http-request](#http-request)
+
+
+### Function: <a name="http-buffer-receiver"><em>http-buffer-receiver</em></a> <i>`BUFFER`</i>
+
+レスポンス・ボディを `BUFFER` で指定したバッファに書きこむための receiver です。
+
+  * `BUFFER` にバッファ名を指定した場合、同名のバッファがあった場合でも新規にバッファを作成します。
+  * `BUFFER` にバッファを指定した場合、指定したバッファの末尾に書き込みます。
+  * [http-response-result](#http-response-result) はバッファを返します。
+
+```lisp
+(defun find-uri (uri)
+  (interactive "sURL: ")
+  (http-get uri
+            :receiver (http-buffer-receiver uri)
+            :oncomplete #'(lambda (buffer status headers uri)
+                            (pop-to-buffer buffer)
+                            (refresh-screen))
+            :onerror #'(lambda (err) (msgbox "Error: ~A" err))
+            :onabort #'(lambda (err) (msgbox "Abort: ~A" err))
+            ))
+```
+
+__See Also:__
+
+  * [http-request](#http-request)
+
+
+### Function: <a name="http-stream-chunk-receiver"><em>http-stream-chunk-receiver</em></a> <i>`CALLBACK` &key (`:if-not-success` (http-string-receiver))</i>
+
+レスポンス・ボディを受信するたびに `CALLBACK` で指定した任意の処理を行うための receiver です。
+
+  * ステータスコードが 200 番台以外の場合は、`:if-not-success` で指定した receiver を利用します。
+  * レスポンス・ボディの終端に達した場合は、`CALLBACK` に `nil` を指定して呼び出します。
+    その時の戻り値が [http-response-result](#http-response-result) の戻り値となります。
+
+```lisp
+http-client.api> (let* ((chunk-size)
+                        (r (http-get "http://www.jsdlab.co.jp/~kamei/"
+                                     :receiver (http-stream-chunk-receiver
+                                                #'(lambda (chunk)
+                                                    (if chunk
+                                                        (push (length chunk) chunk-size)
+                                                      chunk-size))))))
+                   (http-response-result r))
+(143 954 1014 983)
+```
+
+__See Also:__
+
+  * [http-request](#http-request)
+
+
+### Function: <a name="http-stream-line-receiver"><em>http-stream-line-receiver</em></a> <i>`CALLBACK` &key (`:if-not-success` (http-string-receiver))</i>
+
+レスポンス・ボディを 1 行受信するたびに `CALLBACK` で指定した任意の処理を行うための receiver です。
+
+  * 1 行ごとに分割して `CALLBACK` を呼び出します。
+  * 受信したレスポンス・ボディに改行文字が含まれない場合、`CALLBACK` は呼び出さずに次のレスポンス・ボディを待ちます。
+    次に改行文字を受信した時点でレスポンス・ボディを結合して `CALLBACK` を呼び出します。
+  * レスポンス・ボディの終端に達した場合は、改行文字がなくてもそれまで受信していたレスポンス・ボディを
+    結合して `CALLBACK` を呼び出します。
+    このときにアプリケーションレベルでは不完全なデータが `CALLBACK` に指定される可能性があります。
+    その後 `CALLBACK` に `nil` を指定して呼び出します。
+    その時の戻り値が [http-response-result](#http-response-result) の戻り値となります。
+  * ステータスコードが 200 番台以外の場合は、`:if-not-success` で指定した receiver を利用します。
+
+```lisp
+http-client.api> (let* ((line-size)
+                        (r (http-get "http://www.jsdlab.co.jp/~kamei//"
+                                     :receiver (http-stream-line-receiver
+                                                #'(lambda (line)
+                                                    (if line
+                                                        (push (length line) line-size)
+                                                      line-size))))))
+                   (http-response-result r))
+(9 10 82 8 9 23 85 21 69 19 102 19 54 21 65 21 56 20 80 25 69 ...)
+```
+
+__See Also:__
+
+  * [http-request](#http-request)
+
+
+### Function: <a name="http-null-receiver"><em>http-null-receiver</em></a>
+
+レスポンス・ボディを読み捨てるための receiver です。
+
+__See Also:__
+
+  * [http-request](#http-request)
+
+
+### Function: <a name="http-request-abort"><em>http-request-abort</em></a> <i>`CLIENT`</i>
+
+指定した `CLIENT` を中断します。
 
 引数には http-{get,head,post,put,delete,request} の戻り値を指定可能です。
 
 通信を中断したなら t を返します。
-既に通信が終了していたら何もせず nil を返します。
+既に通信が終了していたら何もせず `nil` を返します。
 
 __See Also:__
 
   * [http-request-aborted-p](#http-request-aborted-p)
 
 
-### Function: <a name="http-request-aborted-p"><em>http-request-aborted-p</em></a> <i>`REQUEST`</i>
+### Function: <a name="http-request-aborted-p"><em>http-request-aborted-p</em></a> <i>`CLIENT`</i>
 
-`REQUEST` を [abort した場合](#http-request-abort) t を返します。
+`CLIENT` を [abort した場合](#http-request-abort) t を返します。
 
 引数には http-{get,head,post,put,delete,request} の戻り値を指定可能です。
 
@@ -370,9 +475,57 @@ __See Also:__
   * [http-request-aborted-p](#http-request-aborted-p)
 
 
-### Function: <a name="http-request-completed-p"><em>http-request-completed-p</em></a> <i>`REQUEST`</i>
+### Function: <a name="http-response-wait"><em>http-response-wait</em></a> <i>`CLIENT` &key `:nowait` `:no-redraw` `:sleep` (`:timeout` 30) (`:interval` 0.1) (`:ready-state` :complete) (`:signal-error` t)</i>
 
-指定した `REQUEST` が完了したなら t を返します。
+`CLIENT` で指定したリクエストが完了するのを待ちます。
+リクエストが完了した場合は t を返します。
+
+  * `:nowait` に `non-nil` を指定するとリクエストが完了していない場合は
+    待ち合わせをせずにすぐに `nil` を返します。
+
+    デフォルトは `nil` です。
+
+  * `:no-redraw` に `non-nil` を指定するとリクエストの完了待ち中に
+    画面の再描画を行いません。
+
+    デフォルトは `nil` です。
+
+  * `:sleep` に `non-nil` を指定するとリクエストの完了待ち中に
+    キー入力があっても中断しません。
+
+    `:sleep` が `nil` の場合キー入力があったら待ち合わせを中断します。
+    中断時点でリクエスト完了していない場合は `nil` を返します。
+
+    `:sleep` を指定した場合は画面の再描画を行いません。
+
+    デフォルトは `nil` です。
+
+  * `:timeout` を指定すると指定した秒数以内にリクエストが完了しない場合、
+    `nil` を返します。
+
+    `:timeout` に `nil` を指定するとタイムアウトせずに無限に待ち合わせます。
+
+    デフォルトは 30 秒です。
+
+  * `:interval` は監視間隔です。
+
+    デフォルトは 0.1 秒です。
+
+  * `:ready-state` は待ち合わせる状態を指定します。
+
+    * :loading を指定するとレスポンス・ヘッダの受信完了を待ち合わせます。
+    * :complete を指定するとレスポンス・ボディの受信完了を待ち合わせます。
+
+    デフォルトは :complete です。
+
+  * `:signal-error` に `non-nil` を指定すると、非同期処理で発生したエラーを再送します。
+
+    デフォルトは t です。
+
+
+### Function: <a name="http-request-completed-p"><em>http-request-completed-p</em></a> <i>`CLIENT`</i>
+
+指定した `CLIENT` が完了したなら t を返します。
 
   * リクエストを [abort した場合](#http-request-abort) でも t を返します。
   * リクエストが完了したか abort したかは、[http-request-aborted-p](#http-request-aborted-p) で区別します。
@@ -380,11 +533,113 @@ __See Also:__
 引数には http-{get,head,post,put,delete,request} の戻り値を指定可能です。
 
 
-### Function: <a name="http-request-waiting-p"><em>http-request-waiting-p</em></a> <i>`REQUEST`</i>
+### Function: <a name="http-request-waiting-p"><em>http-request-waiting-p</em></a> <i>`CLIENT`</i>
 
-指定した `REQUEST` がまだ処理中なら t を返します。
+指定した `CLIENT` がまだ処理中なら t を返します。
 
 引数には http-{get,head,post,put,delete,request} の戻り値を指定可能です。
+
+
+### Function: <a name="http-request-uri"><em>http-request-uri</em></a> <i>`CLIENT`</i>
+
+リクエストした URL を取得します。
+リダイレクトした場合はリダイレクト後の URL になります。
+
+```lisp
+http-client.api> (let ((r (http-get "http://goo.gl/bgggL")))
+                   (http-request-uri r))
+"http://www.jsdlab.co.jp/~kamei/"
+```
+
+
+### Function: <a name="http-request-header"><em>http-request-header</em></a> <i>`CLIENT` `HEADER`</i>
+
+指定したリクエスト・ヘッダを取得します。
+
+```lisp
+http-client.api> (let ((r (http-get "http://www.google.co.jp/")))
+                   (http-request-header r "User-Agent"))
+"xyzzy/0.2.2.235"
+```
+
+### Function: <a name="http-request-header-alist"><em>http-request-header-alist</em></a> <i>`CLIENT`</i>
+
+すべてのリクエスト・ヘッダを alist で取得します。
+
+```lisp
+http-client.api> (let ((r (http-get "http://www.google.co.jp/"
+                                    :headers `(:X-Foo 1))))
+                   (http-request-header-alist r))
+(("X-Foo" . "1")
+ ("User-Agent" . "xyzzy/0.2.2.235")
+ ("Connection" . "Keep-Alive"))
+```
+
+### Function: <a name="http-response-status"><em>http-response-status</em></a> <i>`CLIENT`</i>
+
+ステータスコードを数値で取得します。
+
+
+### Function: <a name="http-response-status-text"><em>http-response-status-text</em></a> <i>`CLIENT`</i>
+
+ステータスコードを文字列で取得します。
+
+```lisp
+http-client.api> (let ((r (http-delete "http://www.google.co.jp/")))
+                   (values (http-response-status r)
+                           (http-response-status-text r)))
+405 ;
+"Method Not Allowed"
+```
+
+
+### Function: <a name="http-response-header"><em>http-response-header</em></a> <i>`CLIENT` `HEADER`</i>
+
+指定したレスポンス・ヘッダを取得します。
+
+```lisp
+http-client.api> (let ((r (http-get "http://www.google.co.jp/")))
+                   (http-response-header r "Date"))
+"Wed, 01 Feb 2012 12:39:32 GMT"
+```
+
+
+### Function: <a name="http-response-header-alist"><em>http-response-header-alist</em></a> <i>`CLIENT`</i>
+
+すべてのレスポンス・ヘッダを alist で取得します。
+
+```lisp
+http-client.api> (let ((r (http-get "http://www.google.co.jp/")))
+                   (http-response-header-alist r))
+(("Cache-Control" . "private, max-age=0")
+ ("Date" . "Wed, 01 Feb 2012 12:40:48 GMT")
+ ("Transfer-Encoding" . "chunked")
+ ...)
+```
+
+
+### Function: <a name="http-response-result"><em>http-response-result</em></a> <i>`CLIENT`</i>
+
+receiver が返した結果を取得します。
+
+__See Also:__
+
+  * [http-string-receiver](#http-string-receiver)
+  * [http-file-receiver](#http-file-receiver)
+  * [http-buffer-receiver](#http-buffer-receiver)
+  * [http-stream-chunk-receiver](#http-stream-chunk-receiver)
+  * [http-stream-line-receiver](#http-stream-line-receiver)
+  * [http-null-receiver](#http-null-receiver)
+
+
+### Function: <a name="http-response-values"><em>http-response-values</em></a> <i>`CLIENT`</i>
+
+以下の値を多値で返します。
+
+  1. [http-response-result](#http-response-result)
+  2. [http-response-status](#http-response-status)
+  3. [http-request-uri](#http-request-uri)
+  4. [http-response-header-alist](#http-response-header-alist)
 
 
 ### Function: <a name="http-compose-query"><em>http-compose-query</em></a> <i>`PATH` `PARAMS` &optional `ENCODING`</i>
@@ -417,7 +672,7 @@ http-client.api> (http-compose-query "/search"
 
   * `PORT` に output-stream を指定した場合はリクエストを `PORT` に書き込み、
     `PORT` と boundary 文字列を多値で返します。
-  * `PORT` に nil を指定した場合はリクエストと boundary 文字列を多値で返します。
+  * `PORT` に `nil` を指定した場合はリクエストと boundary 文字列を多値で返します。
 
 ```lisp
 http-client.api> (setf body '((q "xyzzy 読み方") (num 50)))
