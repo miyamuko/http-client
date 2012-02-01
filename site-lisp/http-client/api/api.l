@@ -188,7 +188,9 @@
     (unless (http-client-waiting-p client ready-state)
       (when signal-error
         (when-let (err (http-client-error client))
-          (error err))))))
+          (error err))))
+    (http-request-completed-p client)
+    ))
 
 
 ;;; request predicates
