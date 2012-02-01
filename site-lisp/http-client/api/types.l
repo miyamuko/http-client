@@ -50,7 +50,6 @@
   error
   request
   )
-(winhttp.internal:export-structure 'http-client :name t :accessor t :predicate t)
 
 (defun ready-state-order (ready-state)
   (or (position ready-state +http-client-ready-state+)
