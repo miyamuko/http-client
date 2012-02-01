@@ -125,7 +125,7 @@
                :headers headers
                :default-headers `(,(when content-type `(:Content-Type ,content-type))
                                   ,(when content-length `(:Content-Length ,content-length))
-                                  :User-Agent ,*http-user-agent*
+                                  (:User-Agent ,*http-user-agent*)
                                   )
                :options `(,(when proxy `(:proxy :proxy-name ,proxy :access-type :named-proxy))
                           ;; デフォルトは :disallow-https-to-http

@@ -66,10 +66,10 @@
     (winhttp:add-request-headers request headers)))
 
 (defun setup-default-headers (request default-headers)
-  (doplist (k v default-headers)
-    (when (and k v)
+  (dolist (header default-headers)
+    (when header
       ;; ‚·‚Å‚É“¯–¼‚Ìƒwƒbƒ_‚ª‚ ‚Á‚½‚ç’Ç‰Á‚µ‚È‚¢
-      (add-default-header request k v))))
+      (apply 'add-default-header request header))))
 
 (defun setup-options (request options)
   (dolist (opt options)
