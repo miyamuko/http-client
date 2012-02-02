@@ -1,5 +1,8 @@
 2012-02-02  MIYAMUKO Katsuyuki
 
+	* (set-proxy, get-proxy-by-ie-config): IE の設定を見てプロキシを設定
+	するようにした
+
 	* (*http-accept-type*): Accept ヘッダが :headers で指定されなかった場合は
 	デフォルトで */* を送るようにした
 

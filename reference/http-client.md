@@ -411,8 +411,10 @@ HTTP DELETE リクエストを送信します。
 
   * `:proxy`
 
-    http プロキシサーバを、hostname または hostname:port 形式の文字列で指定します。
-    指定しない場合は、WinHTTP のデフォルト設定のプロキシが利用されます。
+    http プロキシサーバを hostname または hostname:port 形式の文字列で指定します。
+    `nil` を指定した場合はプロキシサーバを利用しません。
+
+    指定しなかった場合は、IE または WinHTTP のデフォルト設定のプロキシが利用されます。
 
   * `:no-redirect`
 

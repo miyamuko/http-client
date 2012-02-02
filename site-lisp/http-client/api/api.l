@@ -28,6 +28,7 @@
   (require "http-client/api/conditions")
   (require "http-client/api/types")
   (require "http-client/api/receiver")
+  (require "http-client/api/misc")
   )
 
 (in-package :http-client.api)
@@ -109,7 +110,9 @@
 
 (defun http-request-impl (method uri body &rest args &key
                                  headers query encoding
-                                 auth proxy-auth proxy no-redirect
+                                 auth proxy-auth
+                                 (proxy nil proxy-supplied-p)
+                                 no-redirect
                                  (receiver (http-string-receiver))
                                  wait
                                  onprogress oncomplete onabort onerror)
@@ -145,9 +148,9 @@
                                   ,(when *http-user-agent* `(:User-Agent ,*http-user-agent*))
                                   ,(when *http-accept-type* `(:Accept ,*http-accept-type*))
                                   )
-               :options `(,(when proxy `(:proxy :proxy-name ,proxy :access-type :named-proxy))
-                          ;; デフォルトは :disallow-https-to-http
+               :options `(;; デフォルトは :disallow-https-to-http
                           (:redirect-policy ,(if no-redirect :never :always))
+                          ;; proxy はあとで設定
                           )
                :credentials `(,(when auth `(:server ,@auth))
                               ,(when proxy-auth `(:proxy ,@proxy-auth))
@@ -179,6 +182,7 @@
                  :error ,#'emit-error
                  )
                ))
+        (set-proxy request uri proxy proxy-supplied-p)
         (setf client (make-http-client :request request))
         (winhttp:send-request request :data (read-into buf body-stream nil nil))
         (when wait

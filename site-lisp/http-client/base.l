@@ -27,6 +27,7 @@
 
 (require "http-client/base/form-data")
 (require "http-client/base/header")
+(require "http-client/base/proxy")
 (require "http-client/base/url")
 (require "http-client/base/utils")
 
