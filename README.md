@@ -125,6 +125,16 @@ http-client は xl-winhttp をラップし利用しやすい API を提供しま
 みやむこ かつゆき (<mailto:miyamuko@gmail.com>)
 
 
+## ACKNOWLEDGEMENT
+
+本ライブラリの仕様を検討するにあたり、Gauche の rfc.http モジュール
+および Clojure の http.async.client モジュールの仕様を参考にさせてもらいました。
+
+  * [Gauche ユーザリファレンス: 11.23 rfc.http - HTTP](http://practical-scheme.net/gauche/man/gauche-refj_146.html)
+  * [rfc.http に関する議論](https://www.google.com/search?q=rfc.http+inurl:http://chaton.practical-scheme.net/gauche/&filter=0&qscrl=1)
+  * [Asynchronous HTTP Client - Clojure - Documentation](http://neotyk.github.com/http.async.client/docs.html#sec-2)
+
+
 ## COPYRIGHT
 
 http-client は MIT/X ライセンスに従って本ソフトウェアを使用、再頒布することができます。
