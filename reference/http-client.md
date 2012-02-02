@@ -4,6 +4,7 @@
     * [http-client.api](#http-client.api)
   * [VARIABLES](#variables)
     * [\*http-user-agent\*](#*http-user-agent*)
+    * [\*http-accept-type\*](#*http-accept-type*)
   * [CONDITIONS](#conditions)
     * [http-error](#http-error)
     * [http-error-cause](#http-error-cause)
@@ -81,9 +82,15 @@
 ### Variable: <a name="*http-user-agent*"><em>\*http-user-agent\*</em></a>
 
 User-Agent ヘッダに渡される値のデフォルト値を指定するスペシャル変数です。
-デフォルトの値は xyzzy/(xyzzy のバージョン) になっています。
+デフォルトの値は `xyzzy/(xyzzy のバージョン)` になっています。
 
 各アプリケーションは適切な値を設定するようにしてください。
+
+
+### Variable: <a name="*http-accept-type*"><em>\*http-accept-type\*</em></a>
+
+Accept ヘッダに渡される値のデフォルト値を指定するスペシャル変数です。
+デフォルトの値は `*/*` になっています。
 
 
 ----

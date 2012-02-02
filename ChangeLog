@@ -1,5 +1,8 @@
 2012-02-02  MIYAMUKO Katsuyuki
 
+	* (*http-accept-type*): Accept ヘッダが :headers で指定されなかった場合は
+	デフォルトで */* を送るようにした
+
 	* (http-error): winhttp-condition を http-error に変換するようにした
 
 	* (http-request, http-progress): onprogress イベントハンドラを追加

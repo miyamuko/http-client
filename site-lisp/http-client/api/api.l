@@ -33,6 +33,7 @@
 (in-package :http-client.api)
 
 (export '(*http-user-agent*
+          *http-accept-type*
           ;; request functions
           http-get
           http-post
@@ -65,6 +66,7 @@
 
 
 (defvar *http-user-agent* (format nil "xyzzy/~A" (software-version)))
+(defvar *http-accept-type* "*/*")
 
 ;;; request functions
 
@@ -140,7 +142,8 @@
                :headers headers
                :default-headers `(,(when content-type `(:Content-Type ,content-type))
                                   ,(when content-length `(:Content-Length ,content-length))
-                                  (:User-Agent ,*http-user-agent*)
+                                  ,(when *http-user-agent* `(:User-Agent ,*http-user-agent*))
+                                  ,(when *http-accept-type* `(:Accept ,*http-accept-type*))
                                   )
                :options `(,(when proxy `(:proxy :proxy-name ,proxy :access-type :named-proxy))
                           ;; デフォルトは :disallow-https-to-http
