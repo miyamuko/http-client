@@ -4,9 +4,7 @@
     * [http-client.api](#http-client.api)
   * [VARIABLES](#variables)
     * [\*http-user-agent\*](#*http-user-agent*)
-  * [STRUCTS](#structs)
-    * [http-client](#http-client)
-  * [FUNCTIONS](#functions)
+  * [FUNCTIONS/MACROS](#function-macros)
     * request API
       * [http-get](#http-get)
       * [http-head](#http-head)
@@ -18,9 +16,10 @@
       * [http-string-receiver](#http-string-receiver)
       * [http-file-receiver](#http-file-receiver)
       * [http-buffer-receiver](#http-buffer-receiver)
-      * [http-stream-chunk-receiver](#http-stream-chunk-receiver)
-      * [http-stream-line-receiver](#http-stream-line-receiver)
+      * [http-oport-receiver](#http-oport-receiver)
       * [http-null-receiver](#http-null-receiver)
+      * [http-general-receiver](#http-general-receiver)
+      * [http-cond-receiver](#http-cond-receiver)
     * request control
       * [http-request-abort](#http-request-abort)
       * [http-response-wait](#http-response-wait)
@@ -72,7 +71,7 @@ User-Agent ヘッダに渡される値のデフォルト値を指定するスペ
 
 ----
 
-## <a name="functions">FUNCTIONS</a>
+## <a name="function-macros">FUNCTIONS/MACROS</a>
 
 
 ### Function: <a name="http-get"><em>http-get</em></a> <i>`URI` &key `:headers` `:query` `:encoding` `:auth` `:proxy-auth` `:proxy` `:no-redirect` `:receiver` `:wait` `:oncomplete` `:onabort` `:onerror`</i>
@@ -247,9 +246,10 @@ HTTP DELETE リクエストを送信します。
       * [http-string-receiver](#http-string-receiver)
       * [http-file-receiver](#http-file-receiver)
       * [http-buffer-receiver](#http-buffer-receiver)
-      * [http-stream-chunk-receiver](#http-stream-chunk-receiver)
-      * [http-stream-line-receiver](#http-stream-line-receiver)
+      * [http-oport-receiver](#http-oport-receiver)
       * [http-null-receiver](#http-null-receiver)
+      * [http-general-receiver](#http-general-receiver)
+      * [http-cond-receiver](#http-cond-receiver)
 
   * `:wait`
 
@@ -370,55 +370,28 @@ __See Also:__
   * [http-request](#http-request)
 
 
-### Function: <a name="http-stream-chunk-receiver"><em>http-stream-chunk-receiver</em></a> <i>`CALLBACK` &key (`:if-not-success` (http-string-receiver))</i>
+### Function: <a name="http-oport-receiver"><em>http-oport-receiver</em></a> <i>`SINK` `FLUSHER` &key `:close` `:finish-output`</i>
 
-レスポンス・ボディを受信するたびに `CALLBACK` で指定した任意の処理を行うための receiver です。
+レスポンス・ボディを `SINK` で指定したストリームに書きこむための receiver です。
 
-  * ステータスコードが 200 番台以外の場合は、`:if-not-success` で指定した receiver を利用します。
-  * レスポンス・ボディの終端に達した場合は、`CALLBACK` に `nil` を指定して呼び出します。
-    その時の戻り値が [http-response-result](#http-response-result) の戻り値となります。
-
-```lisp
-http-client.api> (let* ((chunk-size)
-                        (r (http-get "http://www.jsdlab.co.jp/~kamei/"
-                                     :receiver (http-stream-chunk-receiver
-                                                #'(lambda (chunk)
-                                                    (if chunk
-                                                        (push (length chunk) chunk-size)
-                                                      chunk-size))))))
-                   (http-response-result r))
-(143 954 1014 983)
-```
-
-__See Also:__
-
-  * [http-request](#http-request)
-
-
-### Function: <a name="http-stream-line-receiver"><em>http-stream-line-receiver</em></a> <i>`CALLBACK` &key (`:if-not-success` (http-string-receiver))</i>
-
-レスポンス・ボディを 1 行受信するたびに `CALLBACK` で指定した任意の処理を行うための receiver です。
-
-  * 1 行ごとに分割して `CALLBACK` を呼び出します。
-  * 受信したレスポンス・ボディに改行文字が含まれない場合、`CALLBACK` は呼び出さずに次のレスポンス・ボディを待ちます。
-    次に改行文字を受信した時点でレスポンス・ボディを結合して `CALLBACK` を呼び出します。
-  * レスポンス・ボディの終端に達した場合は、改行文字がなくてもそれまで受信していたレスポンス・ボディを
-    結合して `CALLBACK` を呼び出します。
-    このときにアプリケーションレベルでは不完全なデータが `CALLBACK` に指定される可能性があります。
-    その後 `CALLBACK` に `nil` を指定して呼び出します。
-    その時の戻り値が [http-response-result](#http-response-result) の戻り値となります。
-  * ステータスコードが 200 番台以外の場合は、`:if-not-success` で指定した receiver を利用します。
+  * `SINK` には出力ストリームを、`FLUSHER` には `SINK` を引数に取る関数を指定します。
+  * `:finish-output` に `non-nil` を指定すると、レスポンス・ボディ終端に達した時点で
+    `SINK` を finish-output します。
+    デフォルトは `nil` です。
+  * `:close` に `non-nil` を指定すると、レスポンス・ボディ終端に達した時点で
+    `SINK` を close します。
+    デフォルトは `nil` です。
+  * [http-response-result](#http-response-result) は `FLUSHER` の戻り値を返します。
+    `FLUSHER` に `nil` を指定すると `SINK` を返します。
 
 ```lisp
-http-client.api> (let* ((line-size)
-                        (r (http-get "http://www.jsdlab.co.jp/~kamei//"
-                                     :receiver (http-stream-line-receiver
-                                                #'(lambda (line)
-                                                    (if line
-                                                        (push (length line) line-size)
-                                                      line-size))))))
-                   (http-response-result r))
-(9 10 82 8 9 23 85 21 69 19 102 19 54 21 65 21 56 20 80 25 69 ...)
+http-client.api> (http-response-result
+                  (http-get "http://www.google.co.jp/"
+                            :receiver (http-oport-receiver *standard-output*
+                                                           #'buffer-stream-buffer)))
+<!doctype html>
+  :
+#<buffer: *REPL*>
 ```
 
 __See Also:__
@@ -429,6 +402,105 @@ __See Also:__
 ### Function: <a name="http-null-receiver"><em>http-null-receiver</em></a>
 
 レスポンス・ボディを読み捨てるための receiver です。
+
+__See Also:__
+
+  * [http-request](#http-request)
+
+
+### Function: <a name="http-general-receiver"><em>http-general-receiver</em></a> <i>`CALLBACK` &key `:line`</i>
+
+レスポンス・ボディを受信するたびに `CALLBACK` で指定した任意の処理を行うための receiver です。
+
+  * `:line` に `nil` を指定した場合:
+    * 受信したレスポンスをそのまま `CALLBACK` に指定して呼び出します。
+  * `:line` に `non-nil` を指定した場合:
+    * 1 行ごとに分割して `CALLBACK` を呼び出します。
+    * 受信したレスポンス・ボディに改行文字が含まれない場合、`CALLBACK` は呼び出さずに次のレスポンス・ボディを待ちます。
+      次に改行文字を受信した時点でレスポンス・ボディを結合して `CALLBACK` を呼び出します。
+    * レスポンス・ボディの終端に達した場合は、改行文字がなくてもそれまで受信していたレスポンス・ボディを
+      結合して `CALLBACK` を呼び出します。
+      このときにアプリケーションレベルでは不完全なデータが `CALLBACK` に指定される可能性があります。
+      その後 `CALLBACK` に `nil` を指定して呼び出します。
+      その時の戻り値が [http-response-result](#http-response-result) の戻り値となります。
+  * レスポンス・ボディの終端に達した場合は、`CALLBACK` に `nil` を指定して呼び出します。
+    その時の戻り値が [http-response-result](#http-response-result) の戻り値となります。
+
+```lisp
+http-client.api> (defun chunk-size (url &key line)
+                   (let* ((chunk-size)
+                          (r (http-get url
+                                       :receiver (http-general-receiver
+                                                  #'(lambda (chunk)
+                                                      (if chunk
+                                                          (push (length chunk) chunk-size)
+                                                        chunk-size))
+                                                  :line line))))
+                     (http-response-result r)))
+
+http-client.api> (setf a (chunk-size "http://www.jsdlab.co.jp/~kamei/" :line t))
+(9 10 81 8 9 23 85 21 69 19 102 19 54 ...)
+
+http-client.api> (setf b (chunk-size "http://www.jsdlab.co.jp/~kamei/"))
+(2502 579)
+
+http-client.api> (values (apply #'+ a) (apply #'+ b))
+3081 ;
+3081
+```
+
+__See Also:__
+
+  * [http-request](#http-request)
+
+
+### Macro: <a name="http-cond-receiver"><em>http-cond-receiver</em></a> <i>(`STATUS` `HEADERS` `CONTENT-LENGTH`) `&BODY` `FORMS`</i>
+
+レスポンスで条件分岐を行い receiver を選択するためのマクロです。
+
+200 OK の場合は [http-file-receiver](#http-file-receiver) を利用してファイルをダウンロードし、
+それ以外の場合は [http-string-receiver](#http-string-receiver) を利用してエラーメッセージを
+文字列で受信するということができます。
+
+  * `STATUS` `HEADERS` `CONTENT-LENGTH` は receiver が受け取る引数名を指定します。
+  * `FORMS` はそのまま cond に展開されます。
+  * `FORMS` は receiver を返すように実装してください。
+
+```lisp
+http-client.api> (defun http-download-sync (uri localfile)
+                   (http-response-values
+                    (http-get uri
+                              :receiver (http-cond-receiver (status headers content-length)
+                                          ((= status 200)
+                                           (http-file-receiver localfile))
+                                          (t
+                                           (http-string-receiver)))
+                              )))
+http-download-sync
+
+http-client.api> (http-download-sync "http://www.jsdlab.co.jp/~kamei/cgi-bin/download.cgi"
+                                     "c:/xyzzy.lzh")
+"c:/xyzzy.lzh"
+200
+(("Date" . "Wed, 01 Feb 2012 01:55:17 GMT") ("Server" . "Apache/2.0") ...)
+"http://www.mars.dti.ne.jp/~t-kamei/xyzzy/xyzzy-0.2.2.235.lzh"
+
+http-client.api> (http-download-sync "http://www.jsdlab.co.jp/~kamei/cgi-bin/download"
+                                     "c:/xyzzy.lzh")
+"<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">
+<HTML><HEAD>
+<TITLE>404 Not Found</TITLE>
+</HEAD><BODY>
+<H1>Not Found</H1>
+The requested URL /~kamei/cgi-bin/download was not found on this server.<P>
+<HR>
+<ADDRESS>Apache/1.3.41 Server at www.jsdlab.co.jp Port 80</ADDRESS>
+</BODY></HTML>
+"
+404
+(("DeleGate-Ver" . "7.9.6 (delay=1)") ("Date" . "Thu, 02 Feb 2012 03:25:23 GMT") ...)
+"http://www.jsdlab.co.jp/~kamei/cgi-bin/download"
+```
 
 __See Also:__
 

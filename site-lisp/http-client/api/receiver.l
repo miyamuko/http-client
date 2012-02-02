@@ -32,33 +32,31 @@
 (export '(http-string-receiver
           http-file-receiver
           http-buffer-receiver
+          http-oport-receiver
           http-null-receiver
-          http-stream-chunk-receiver
-          http-stream-line-receiver
+          http-general-receiver
+          http-cond-receiver
           ))
 
 (defun http-string-receiver ()
   #'(lambda (status headers content-length)
-      (let ((sink (make-string-output-stream)))
-        #'(lambda (chunk)
-            (if chunk
-                (princ chunk sink)
-              sink))
+      (let ((sink (if content-length
+                      (si:*make-string-output-stream-from-string (make-buffer content-length))
+                    (make-string-output-stream))))
+        (make-stream-callback sink #'get-output-stream-string
+                              :enclose t)
         )))
 
 (defun http-file-receiver (filename &key encoding if-exists share)
+  ;; default-directory が変わっているかもしれないので、
+  ;; この時点でフルパスにしておく
   (setf filename (namestring filename))
   #'(lambda (status headers content-length)
       (let ((sink (open filename :direction :output
                         :encoding (or encoding :binary)
                         :if-exists (or if-exists :new-version)
                         :share share)))
-        #'(lambda (chunk)
-            (if chunk
-                (princ chunk sink)
-              (unwind-protect
-                  filename
-                (close sink))))
+        (make-stream-callback sink #'namestring)
         )))
 
 (defun http-buffer-receiver (buffer)
@@ -68,11 +66,16 @@
                          buffer
                        (create-new-buffer buffer)))
              (sink (make-buffer-stream buffer)))
-        #'(lambda (chunk)
-            (if chunk
-                (princ chunk sink)
-              buffer))
+        (make-stream-callback sink #'buffer-stream-buffer)
         )))
+
+(defun http-oport-receiver (sink flusher &key close finish-output)
+  (check-type sink output-stream)
+  #'(lambda (status headers content-length)
+      (make-stream-callback sink flusher
+                            :close close
+                            :finish-output finish-output)
+      ))
 
 (defun http-null-receiver ()
   #'(lambda (status headers content-length)
@@ -81,17 +84,9 @@
           )
       ))
 
-(defun http-stream-chunk-receiver (callback &key (if-not-success (http-string-receiver)))
+(defun http-general-receiver (callback &key line)
   #'(lambda (status headers content-length)
-      (if (<= 200 status 299)
-          #'(lambda (chunk)
-              (funcall callback chunk))
-        (funcall if-not-success status headers content-length)
-        )))
-
-(defun http-stream-line-receiver (callback &key (if-not-success (http-string-receiver)))
-  #'(lambda (status headers content-length)
-      (if (<= 200 status 299)
+      (if line
           (let (buffer)
             #'(lambda (chunk)
                 (setf buffer (concat buffer chunk))
@@ -107,8 +102,36 @@
                     (funcall callback buffer))
                   (setf buffer nil)
                   (funcall callback nil))))
-        (funcall if-not-success status headers content-length)
+        #'(lambda (chunk)
+            (funcall callback chunk))
         )))
+
+(defmacro http-cond-receiver ((status headers content-length) &body forms)
+  `#'(lambda (,status ,headers ,content-length)
+       (funcall (cond ,@forms)
+                ,status ,headers ,content-length)))
+(setf (get 'http-cond-receiver 'ed:lisp-indent-hook) 1)
+
+(defun make-stream-callback (sink flusher &key enclose (close t) (finish-output t))
+  (check-type sink output-stream)
+  (unless flusher
+    (setf flusher #'identity))
+  #'(lambda (chunk)
+      (if chunk
+          (princ chunk sink)
+        (unwind-protect
+            (progn
+              (when finish-output
+                (finish-output sink))
+              (let ((r (funcall flusher sink)))
+                (if enclose
+                    ;; http-client を表示したときにレスポンスの内容が
+                    ;; 長々と出力されないようにクロージャで隠蔽する
+                    ;; See also: http-response-result
+                    #'(lambda () r)
+                  r)))
+          (when close
+            (close sink))))))
 
 
 (provide "http-client/api/receiver")

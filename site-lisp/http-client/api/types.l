@@ -37,7 +37,9 @@
 
 (deftype output-stream ()
   `(satisfies (lambda (v)
-                (and v (output-stream-p v)))))
+                (and v
+                     (streamp v)
+                     (output-stream-p v)))))
 
 (defstruct http-client
   (ready-state :uninitialized)

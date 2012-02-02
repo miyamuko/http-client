@@ -1,3 +1,20 @@
+2012-02-02  MIYAMUKO Katsuyuki
+
+	* receiver 周りをいろいろ改善
+	- http-string-receiver
+	  - http-response-result の 2 回目以降に結果が取れなかったのを修正
+	    - get-output-stream-string は 1 回しか呼べない
+	  - content-length が分かっているなら指定サイズ分の内部バッファを
+	    作っておくようにした
+	- http-oport-receiver
+	  - sink, flusher を引数に取る receiver
+	- http-general-receiver
+	  - http-stream-chunk-receiver と http-stream-line-receiver を統合
+	- http-cond-receiver
+	  - status コードなどで receiver を切り替えるための便利マクロ
+	- make-stream-callback
+	  - stream 周りの処理の共通部分を抽出した
+
 2012-02-01  MIYAMUKO Katsuyuki
 
 	* 仕様と実装を大きく変更というか再実装した

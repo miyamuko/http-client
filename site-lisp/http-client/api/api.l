@@ -241,8 +241,8 @@
 (defun http-response-result (client)
   (http-response-wait client)
   (when-let (r (http-client-result client))
-    (if (string-output-stream-p r)
-        (get-output-stream-string r)
+    (if (functionp r)
+        (funcall r)
       r)))
 
 (defun http-response-values (client)
