@@ -106,8 +106,6 @@ http-client は xl-winhttp をラップし利用しやすい API を提供しま
 
 * :accept */* は Accept ヘッダが指定されていない場合のみ設定する
   - `*default-accept-header*`
-* http-error
-  - winhttp-condition をラップする
 * content-transfer-encoding で binary 以外の対応
 * メモリ使用量削減
   - 受信バッファ用 chunk の再利用

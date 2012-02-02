@@ -25,6 +25,7 @@
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (require "http-client/api/package")
+  (require "http-client/api/conditions")
   (require "http-client/api/types")
   (require "http-client/api/receiver")
   )
@@ -97,9 +98,19 @@
 (defun http-request (method uri body &rest args &key
                             headers query encoding
                             auth proxy-auth proxy no-redirect
-                            (receiver (http-string-receiver))
+                            receiver
                             wait
                             onprogress oncomplete onabort onerror)
+  (with-translate-condition
+   (apply 'http-request-impl method uri body args)))
+
+
+(defun http-request-impl (method uri body &rest args &key
+                                 headers query encoding
+                                 auth proxy-auth proxy no-redirect
+                                 (receiver (http-string-receiver))
+                                 wait
+                                 onprogress oncomplete onabort onerror)
   (multiple-value-bind (content-type content-length body-stream)
       (parse-form-data body encoding)
     (let ((buf (make-buffer))
@@ -112,11 +123,10 @@
                  (when handler
                    (apply handler args)))
                (emit-error (err)
+                 (setf err (translate-condition err))
                  (set-on-error client err)
                  (when err
-                   (let ((handler (if (and (typep err 'winhttp:winhttp-condition)
-                                           (eq (winhttp:winhttp-condition-error-keyword err)
-                                               :operation-cancelled))
+                   (let ((handler (if (typep err 'http-abort-error)
                                       onabort onerror)))
                      (emit handler err))))
                (emit-progress (progress n)
@@ -180,7 +190,8 @@
   (unless (http-request-completed-p client)
     (let ((ctx (winhttp:request-context (http-client-request client))))
       (setf (context-aborted-p ctx) t))
-    (winhttp:close-handle (http-client-request client))
+    (with-translate-condition
+     (winhttp:close-handle (http-client-request client)))
     ))
 
 (defun http-response-wait (client &key nowait no-redraw sleep (timeout 30) (interval 0.1)

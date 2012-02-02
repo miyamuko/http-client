@@ -4,6 +4,14 @@
     * [http-client.api](#http-client.api)
   * [VARIABLES](#variables)
     * [\*http-user-agent\*](#*http-user-agent*)
+  * [CONDITIONS](#conditions)
+    * [http-error](#http-error)
+    * [http-error-cause](#http-error-cause)
+    * [http-error-keyword](#http-error-keyword)
+    * [http-abort-error](#http-abort-error)
+    * [http-connect-error](#http-connect-error)
+    * [http-request-error](#http-request-error)
+    * [http-timeout-error](#http-timeout-error)
   * [STRUCTS](#structs)
     * http-progress
       * [http-progress](#http-progress)
@@ -77,8 +85,101 @@ User-Agent ヘッダに渡される値のデフォルト値を指定するスペ
 
 各アプリケーションは適切な値を設定するようにしてください。
 
+
 ----
 
+## <a name="conditions">CONDITIONS</a>
+
+### Condition: <a name="http-error"><em>http-error</em></a>
+
+HTTP 通信でエラーが発生した場合に通知されるコンディションです。
+
+継承関係は以下のとおりです。
+
+  * simple-error
+    * http-error
+      * [http-abort-error](#http-abort-error)
+      * [http-connect-error](#http-connect-error)
+      * [http-request-error](#http-request-error)
+      * [http-timeout-error](#http-timeout-error)
+
+以下のスロットが定義されています。
+
+  * `cause`
+
+    元となったエラーが設定されます。
+
+  * `keyword`
+
+    発生したエラーをあらわすキーワードが設定されます。
+    キーワードは [WinHTTP Error Messages] のエラー名に対応します。
+
+    例): `ERROR_WINHTTP_NAME_NOT_RESOLVED` なら `:name-not-resolved`
+
+  [WinHTTP Error Messages]: http://msdn.microsoft.com/en-us/library/windows/desktop/aa383770.aspx
+
+__See Also:__
+
+  * [http-error-cause](#http-error-cause)
+  * [http-error-keyword](#http-error-keyword)
+
+
+### Condition: <a name="http-abort-error"><em>http-abort-error</em></a>
+
+通信を中断した場合に通知されるコンディションです。
+
+__See Also:__
+
+  * [http-error](#http-error)
+  * [http-request-abort](#http-request-abort)
+
+
+### Condition: <a name="http-connect-error"><em>http-connect-error</em></a>
+
+サーバに接続できない場合に通知されるコンディションです。
+
+__See Also:__
+
+  * [http-error](#http-error)
+
+
+### Condition: <a name="http-request-error"><em>http-request-error</em></a>
+
+サーバとの通信に失敗した場合に通知されるコンディションです。
+
+__See Also:__
+
+  * [http-error](#http-error)
+
+
+### Condition: <a name="http-timeout-error"><em>http-timeout-error</em></a>
+
+通信中にタイムアウトが発生した場合に通知されるコンディションです。
+
+__See Also:__
+
+  * [http-error](#http-error)
+
+
+### Accessor: <a name="http-error-cause"><em>http-error-cause</em></a> <i>`X`</i>
+
+[http-error](#http-error) コンディションの `cause` スロットを取得します。
+
+__See Also:__
+
+  * [http-error](#http-error)
+
+
+### Accessor: <a name="http-error-keyword"><em>http-error-keyword</em></a> <i>`X`</i>
+
+[http-error](#http-error) コンディションの `keyword` スロットを取得します。
+
+__See Also:__
+
+  * [http-error](#http-error)
+
+
+----
 
 ## <a name="structs">STRUCTS</a>
 
