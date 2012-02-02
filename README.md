@@ -88,8 +88,8 @@ http-client は xl-winhttp をラップし利用しやすい API を提供しま
 
 ## INSTALL
 
-1. [NetInstaller] で ansi-loop, ansify をインストールします。
-   で http-client, xl-winhttp, xl-alexandria, ansi-loop, ansify, setf-values をインストールします。
+1. [NetInstaller] で http-client, xl-winhttp, xl-alexandria, ansi-loop, ansify, setf-values
+   をインストールします。
 
 2. http-client はライブラリであるため自動的にロードはされません。
    必要な時点で require してください。
