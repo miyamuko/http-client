@@ -37,12 +37,6 @@
           http-progress-percent
           ))
 
-(defconstant +http-client-ready-state+
-  '(:uninitialized              ; 初期状態
-    :loading                    ; ヘッダ受信完了 & ボディ受信中
-    :complete                   ; ボディ受信完了
-    ))
-
 (deftype output-stream ()
   `(satisfies (lambda (v)
                 (and v
@@ -76,7 +70,7 @@
 
 
 (defstruct http-client
-  (ready-state :uninitialized)
+  (ready-state :loading)
   uri
   status-code
   status-text
@@ -86,6 +80,13 @@
   error
   request
   )
+
+
+(defconstant +http-client-ready-state+
+  '(:loading                    ; リクエスト送信             ～ レスポンス・ヘッダ受信中
+    :loaded                     ; レスポンス・ヘッダ受信完了 ～ レスポンス・ボディ受信中
+    :complete                   ; レスポンス・ボディ受信完了
+    ))
 
 (defun ready-state-order (ready-state)
   (or (position ready-state +http-client-ready-state+)
@@ -98,7 +99,7 @@
 
 (defun set-on-response (client &optional (request (http-client-request client)))
   (setf (http-client-ready-state client)
-        :loading
+        :loaded
 
         (http-client-uri client)
         (winhttp:query-option request :url)

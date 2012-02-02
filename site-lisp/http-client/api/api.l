@@ -220,32 +220,32 @@
 ;;; request accessors
 
 (defun http-request-uri (client)
-  (http-response-wait client :ready-state :loading)
+  (http-response-wait client :ready-state :loaded)
   (http-client-uri client))
 
 (defun http-request-header (client header)
   (cdr (assoc header (http-request-header-alist client) :test #'equalp)))
 
 (defun http-request-header-alist (client)
-  (http-response-wait client :ready-state :loading)
+  (http-response-wait client :ready-state :loaded)
   (http-client-request-header-alist client))
 
 
 ;;; response accessors
 
 (defun http-response-status (client)
-  (http-response-wait client :ready-state :loading)
+  (http-response-wait client :ready-state :loaded)
   (http-client-status-code client))
 
 (defun http-response-status-text (client)
-  (http-response-wait client :ready-state :loading)
+  (http-response-wait client :ready-state :loaded)
   (http-client-status-text client))
 
 (defun http-response-header (client header)
   (cdr (assoc header (http-response-header-alist client) :test #'equalp)))
 
 (defun http-response-header-alist (client)
-  (http-response-wait client :ready-state :loading)
+  (http-response-wait client :ready-state :loaded)
   (http-client-response-header-alist client))
 
 (defun http-response-result (client)
