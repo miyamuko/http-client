@@ -67,7 +67,7 @@
             (winhttp:read-data req n))))
     ;; レスポンスボディ受信
     ((:read-complete req data n)
-     (emit-data req data)
+     (emit-data req data n)
      (winhttp:query-data-available req))
     ;; 送信エラー
     ((:request-error req type error)

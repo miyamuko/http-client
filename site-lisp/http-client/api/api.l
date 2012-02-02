@@ -73,7 +73,7 @@
                           auth proxy-auth proxy no-redirect
                           receiver
                           wait
-                          oncomplete onabort onerror)
+                          onprogress oncomplete onabort onerror)
     (apply 'http-request "GET" uri nil args))
 
   (defun http-post #2=(uri body &rest args &key
@@ -81,7 +81,7 @@
                            auth proxy-auth proxy no-redirect
                            receiver
                            wait
-                           oncomplete onabort onerror)
+                           onprogress oncomplete onabort onerror)
     (apply 'http-request "POST" uri body args))
 
   (defun http-head #1#
@@ -99,24 +99,30 @@
                             auth proxy-auth proxy no-redirect
                             (receiver (http-string-receiver))
                             wait
-                            oncomplete onabort onerror)
+                            onprogress oncomplete onabort onerror)
   (multiple-value-bind (content-type content-length body-stream)
       (parse-form-data body encoding)
     (let ((buf (make-buffer))
           (client (make-http-client))
-          request ondata)
-      (flet ((emit (handler &rest args)
-               (when handler
-                 (apply handler args)))
-             (emit-error (err)
-               (set-on-error client err)
-               (when err
-                 (let ((handler (if (and (typep err 'winhttp:winhttp-condition)
-                                         (eq (winhttp:winhttp-condition-error-keyword err)
-                                             :operation-cancelled))
-                                    onabort onerror)))
-                   (when handler
-                     (funcall handler err))))))
+          request ondata
+          (request-progress (make-http-progress :response-p nil :total content-length))
+          (response-progress (make-http-progress :response-p t))
+          )
+      (labels ((emit (handler &rest args)
+                 (when handler
+                   (apply handler args)))
+               (emit-error (err)
+                 (set-on-error client err)
+                 (when err
+                   (let ((handler (if (and (typep err 'winhttp:winhttp-condition)
+                                           (eq (winhttp:winhttp-condition-error-keyword err)
+                                               :operation-cancelled))
+                                      onabort onerror)))
+                     (emit handler err))))
+               (emit-progress (progress n)
+                 (when n
+                   (incf (http-progress-current progress) n)
+                   (emit onprogress progress))))
         (setf request
               (make-http-request
                method
@@ -136,17 +142,21 @@
                :handlers
                `(:response ,#'(lambda ()
                                 (set-on-response client)
-                                (setf ondata
-                                      (emit receiver
-                                            (http-response-status client)
-                                            (http-response-header-alist client)
-                                            (winhttp:query-response-header request :content-length :type :number)
-                                            )))
+                                (let ((len (winhttp:query-response-header request :content-length :type :number)))
+                                  (setf (http-progress-total response-progress) len)
+                                  (setf ondata
+                                        (emit receiver
+                                              (http-response-status client)
+                                              (http-response-header-alist client)
+                                              len
+                                              ))))
                  :send ,#'(lambda (n)
+                            (emit-progress request-progress n)
                             (if (listen body-stream)
                                 (winhttp:write-data request (read-into buf body-stream nil nil))
                               (winhttp:receive-response request)))
-                 :data ,#'(lambda (chunk)
+                 :data ,#'(lambda (chunk n)
+                            (emit-progress response-progress n)
                             (emit ondata chunk))
                  :end ,#'(lambda ()
                            (set-on-end client (emit ondata nil))

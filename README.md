@@ -108,9 +108,6 @@ http-client は xl-winhttp をラップし利用しやすい API を提供しま
   - `*default-accept-header*`
 * http-error
   - winhttp-condition をラップする
-* イベント追加?
-  - onprogress (type send-or-write-length content-length)
-    - 進捗状況のコールバック
 * content-transfer-encoding で binary 以外の対応
 * メモリ使用量削減
   - 受信バッファ用 chunk の再利用

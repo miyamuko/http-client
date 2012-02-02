@@ -1,5 +1,8 @@
 2012-02-02  MIYAMUKO Katsuyuki
 
+	* (http-request, http-progress): onprogress イベントハンドラを追加
+	- 引数は http-progress 構造体
+
 	* receiver 周りをいろいろ改善
 	- http-string-receiver
 	  - http-response-result の 2 回目以降に結果が取れなかったのを修正

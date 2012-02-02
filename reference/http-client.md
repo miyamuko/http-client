@@ -4,6 +4,14 @@
     * [http-client.api](#http-client.api)
   * [VARIABLES](#variables)
     * [\*http-user-agent\*](#*http-user-agent*)
+  * [STRUCTS](#structs)
+    * http-progress
+      * [http-progress](#http-progress)
+      * [http-progress-p](#http-progress-p)
+      * [http-progress-response-p](#http-progress-response-p)
+      * [http-progress-current](#http-progress-current)
+      * [http-progress-total](#http-progress-total)
+      * [http-progress-percent](#http-progress-percent)
   * [FUNCTIONS/MACROS](#function-macros)
     * request API
       * [http-get](#http-get)
@@ -71,45 +79,122 @@ User-Agent ヘッダに渡される値のデフォルト値を指定するスペ
 
 ----
 
+
+## <a name="structs">STRUCTS</a>
+
+
+### Struct: <a name="http-progress"><em>http-progress</em></a>
+
+リクエスト・ボディの送信またはレスポンス・ボディの受信処理の進捗状況を表す構造体です。
+
+以下のスロットが定義されています。
+
+  * `response-p`
+
+    レスポンス・ボディの受信処理の場合 t が設定されます。
+
+  * `current`
+
+    現在までに送受信したバイトサイズが設定されます。
+
+  * `total`
+
+    Content-Length ヘッダの値が設定されます。
+    送受信するデータが惣菜しない場合や Content-Length が不明な場合は nil が設定されます。
+
+__See Also:__
+
+  * [http-progress-p](#http-progress-p)
+  * [http-progress-response-p](#http-progress-response-p)
+  * [http-progress-current](#http-progress-current)
+  * [http-progress-total](#http-progress-total)
+  * [http-progress-percent]](#http-progress-percent)
+
+
+### Accessor: <a name="http-progress-p"><em>http-progress-p</em></a> <i>`X`</i>
+
+`X` が [http-progress](#http-progress) 構造体のインスタンスなら t を返します。
+
+__See Also:__
+
+  * [http-progress](#http-progress)
+
+
+### Accessor: <a name="http-progress-response-p"><em>http-progress-response-p</em></a> <i>`X`</i>
+
+[http-progress](#http-progress) 構造体の `response-p` スロットを取得します。
+
+__See Also:__
+
+  * [http-progress](#http-progress)
+
+
+### Accessor: <a name="http-progress-current"><em>http-progress-current</em></a> <i>`X`</i>
+
+[http-progress](#http-progress) 構造体の `current` スロットを取得します。
+
+__See Also:__
+
+  * [http-progress](#http-progress)
+
+
+### Accessor: <a name="http-progress-total"><em>http-progress-total</em></a> <i>`X`</i>
+
+[http-progress](#http-progress) 構造体の `total` スロットを取得します。
+
+__See Also:__
+
+  * [http-progress](#http-progress)
+
+
+### Function: <a name="http-progress-percent"><em>http-progress-percent</em></a> <i>`X`</i>
+
+[http-progress](#http-progress) 構造体の進捗率 (%) を整数で取得します。
+
+`total` スロットが `nil` または 0 以下の場合は `nil` を返します。
+
+
+----
+
 ## <a name="function-macros">FUNCTIONS/MACROS</a>
 
 
-### Function: <a name="http-get"><em>http-get</em></a> <i>`URI` &key `:headers` `:query` `:encoding` `:auth` `:proxy-auth` `:proxy` `:no-redirect` `:receiver` `:wait` `:oncomplete` `:onabort` `:onerror`</i>
+### Function: <a name="http-get"><em>http-get</em></a> <i>`URI` &key `:headers` `:query` `:encoding` `:auth` `:proxy-auth` `:proxy` `:no-redirect` `:receiver` `:wait` `:onprogress` `:oncomplete` `:onabort` `:onerror`</i>
 
 HTTP GET リクエストを送信します。
 
 詳細は [http-request](#http-request) を参照してください。
 
 
-### Function: <a name="http-head"><em>http-head</em></a> <i>`URI` &key `:headers` `:query` `:encoding` `:auth` `:proxy-auth` `:proxy` `:no-redirect` `:receiver` `:wait` `:oncomplete` `:onabort` `:onerror`</i>
+### Function: <a name="http-head"><em>http-head</em></a> <i>`URI` &key `:headers` `:query` `:encoding` `:auth` `:proxy-auth` `:proxy` `:no-redirect` `:receiver` `:wait` `:onprogress` `:oncomplete` `:onabort` `:onerror`</i>
 
 HTTP HEAD リクエストを送信します。
 
 詳細は [http-request](#http-request) を参照してください。
 
 
-### Function: <a name="http-post"><em>http-post</em></a> <i>`URI` `BODY` &key `:headers` `:query` `:encoding` `:auth` `:proxy-auth` `:proxy` `:no-redirect` `:receiver` `:wait` `:oncomplete` `:onabort` `:onerror`</i>
+### Function: <a name="http-post"><em>http-post</em></a> <i>`URI` `BODY` &key `:headers` `:query` `:encoding` `:auth` `:proxy-auth` `:proxy` `:no-redirect` `:receiver` `:wait` `:onprogress` `:oncomplete` `:onabort` `:onerror`</i>
 
 HTTP POST リクエストを送信します。
 
 詳細は [http-request](#http-request) を参照してください。
 
 
-### Function: <a name="http-put"><em>http-put</em></a> <i>`URI` `BODY` &key `:headers` `:query` `:encoding` `:auth` `:proxy-auth` `:proxy` `:no-redirect` `:receiver` `:wait` `:oncomplete` `:onabort` `:onerror`</i>
+### Function: <a name="http-put"><em>http-put</em></a> <i>`URI` `BODY` &key `:headers` `:query` `:encoding` `:auth` `:proxy-auth` `:proxy` `:no-redirect` `:receiver` `:wait` `:onprogress` `:oncomplete` `:onabort` `:onerror`</i>
 
 HTTP PUT リクエストを送信します。
 
 詳細は [http-request](#http-request) を参照してください。
 
 
-### Function: <a name="http-delete"><em>http-delete</em></a> <i>`URI` &key `:headers` `:query` `:encoding` `:auth` `:proxy-auth` `:proxy` `:no-redirect` `:receiver` `:wait` `:oncomplete` `:onabort` `:onerror`</i>
+### Function: <a name="http-delete"><em>http-delete</em></a> <i>`URI` &key `:headers` `:query` `:encoding` `:auth` `:proxy-auth` `:proxy` `:no-redirect` `:receiver` `:wait` `:onprogress` `:oncomplete` `:onabort` `:onerror`</i>
 
 HTTP DELETE リクエストを送信します。
 
 詳細は [http-request](#http-request) を参照してください。
 
 
-### Function: <a name="http-request"><em>http-request</em></a> <i>`METHOD` `URI` `BODY` &key `:headers` `:query` `:encoding` `:auth` `:proxy-auth` `:proxy` `:no-redirect` (`:receiver` (http-string-receiver)) `:wait` `:oncomplete` `:onabort` `:onerror`</i>
+### Function: <a name="http-request"><em>http-request</em></a> <i>`METHOD` `URI` `BODY` &key `:headers` `:query` `:encoding` `:auth` `:proxy-auth` `:proxy` `:no-redirect` (`:receiver` (http-string-receiver)) `:wait` `:onprogress` `:oncomplete` `:onabort` `:onerror`</i>
 
 `URI` に `METHOD` で指定されたリクエストを送信して future オブジェクトを返します。
 
@@ -256,12 +341,21 @@ HTTP DELETE リクエストを送信します。
     `wait` に `non-nil` を指定した場合、同期モードで動作します。
     リクエストが完了するまで関数は処理を返しません。
 
-  * `:oncomplete`, `:onabort`, `:onerror`
+  * `:onprogress`, `:oncomplete`, `:onabort`, `:onerror`
 
-    `:oncomplete` には 4 引数を取る手続きを、`:onabort` および `:onerror`
+    `:oncomplete` には 4 引数を取る手続きを、`:onprogress`、`:onabort` および `:onerror`
     には 1 引数を取る関数を指定してください。
 
     `nil` を指定した場合は何も呼び出されません。
+
+    * `:onprogress`: リクエスト・ボディの送信中またはレスポンス・ボディの受信中に
+      呼び出されます。引数は [http-progress](#http-progress) オブジェクトです。
+
+      ```lisp
+      http-client.api> (http-get "http://www.google.co.jp/"
+                                 :onprogress #'(lambda (progress)
+                                                 (message "~A" progress)))
+      ```
 
     * `:oncomplete`: リクエストが完了した場合に呼び出されます。
       引数は レスポンス・ボディ、ステータスコード、レスポンス・ヘッダ、URL です。

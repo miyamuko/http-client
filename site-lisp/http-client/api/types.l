@@ -29,6 +29,14 @@
 
 (in-package :http-client.api)
 
+(export '(http-progress
+          http-progress-p
+          http-progress-direction
+          http-progress-current
+          http-progress-total
+          http-progress-percent
+          ))
+
 (defconstant +http-client-ready-state+
   '(:uninitialized              ; 初期状態
     :loading                    ; ヘッダ受信完了 & ボディ受信中
@@ -40,6 +48,32 @@
                 (and v
                      (streamp v)
                      (output-stream-p v)))))
+
+
+(defstruct (http-progress
+            (:print-function
+             (lambda (o s p)
+               (if-let (percent (http-progress-percent o))
+                   (format s "~:[Send~;Receive~] ~:D/~:D bytes (~D%)"
+                           (http-progress-response-p o)
+                           (http-progress-current o)
+                           (http-progress-total o)
+                           percent)
+                 (format s "~:[Send~;Receive~] ~:D bytes"
+                         (http-progress-response-p o)
+                         (http-progress-current o))))))
+  (response-p nil :type symbol :read-only t)
+  (current 0 :type integer :read-only nil)
+  (total 0 :type integer :read-only nil)
+  )
+
+(defun http-progress-percent (x)
+  (check-type x http-progress)
+  (when (and (http-progress-total x)
+             (< 0 (http-progress-total x)))
+    (floor (* 100 (/ (http-progress-current x)
+                     (http-progress-total x))))))
+
 
 (defstruct http-client
   (ready-state :uninitialized)
