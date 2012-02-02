@@ -66,13 +66,14 @@
 
 ### Package: <a name="http-client.api"><em>http-client.api</em></a>
 
-このパッケージは、[RFC2616 "Hypertext Transfer Protocol - HTTP/1.1"](http://tools.ietf.org/html/rfc2616)
+このパッケージは、[RFC2616 "Hypertext Transfer Protocol - HTTP/1.1"]
 で定義されている HTTP/1.1 に対する簡単なクライアント API を提供します。
 
 パッケージのニックネームは以下のとおりです。
 
   * `http-client`
 
+  [RFC2616 "Hypertext Transfer Protocol - HTTP/1.1"]: http://tools.ietf.org/html/rfc2616
 
 ----
 
@@ -304,7 +305,7 @@ HTTP DELETE リクエストを送信します。
 
 ### Function: <a name="http-request"><em>http-request</em></a> <i>`METHOD` `URI` `BODY` &key `:headers` `:query` `:encoding` `:auth` `:proxy-auth` `:proxy` `:no-redirect` (`:receiver` (http-string-receiver)) `:wait` `:onprogress` `:oncomplete` `:onabort` `:onerror`</i>
 
-`URI` に `METHOD` で指定されたリクエストを送信して future オブジェクトを返します。
+`URI` に `METHOD` で指定されたリクエストを送信して Future オブジェクトを返します。
 
 #### 引数
 
@@ -436,7 +437,7 @@ HTTP DELETE リクエストを送信します。
 
     `:receiver` のデフォルト値は [http-string-receiver](#http-string-receiver) です。
 
-    __See Also:__
+    receiver には以下の値を指定可能です。
 
       * [http-string-receiver](#http-string-receiver)
       * [http-file-receiver](#http-file-receiver)
@@ -484,8 +485,8 @@ HTTP DELETE リクエストを送信します。
 
 `:wait` に `non-nil` を指定しない場合、API を呼び出すとすぐに制御を返します。
 
-  * Future オブジェクトから値を取得しようとした時点で
-    まだリクエストが完了していない場合はブロックします。
+  * [http-response-values](#http-response-values) などで、Future オブジェクトから値を
+    取得しようとした時点で、まだリクエストが完了していない場合はブロックします。
   * [http-response-wait](#http-response-wait) で明示的にリクエストの完了を待つことが可能です。
   * リクエストが完了したかどうかは [http-request-completed-p](#http-request-completed-p)
     で判断できます。
@@ -666,7 +667,7 @@ __See Also:__
 それ以外の場合は [http-string-receiver](#http-string-receiver) を利用してエラーメッセージを
 文字列で受信するということができます。
 
-  * `STATUS` `HEADERS` `CONTENT-LENGTH` は receiver が受け取る引数名を指定します。
+  * `STATUS`, `HEADERS`, `CONTENT-LENGTH` は receiver が受け取る引数名を指定します。
   * `FORMS` はそのまま cond に展開されます。
   * `FORMS` は receiver を返すように実装してください。
 
