@@ -7,15 +7,14 @@
     * [\*http-accept-type\*](#*http-accept-type*)
   * [CONDITIONS](#conditions)
     * [http-error](#http-error)
-    * [http-error-cause](#http-error-cause)
-    * [http-error-keyword](#http-error-keyword)
+      * [http-error-cause](#http-error-cause)
+      * [http-error-keyword](#http-error-keyword)
     * [http-abort-error](#http-abort-error)
     * [http-connect-error](#http-connect-error)
     * [http-request-error](#http-request-error)
     * [http-timeout-error](#http-timeout-error)
   * [STRUCTS](#structs)
-    * http-progress
-      * [http-progress](#http-progress)
+    * [http-progress](#http-progress)
       * [http-progress-p](#http-progress-p)
       * [http-progress-response-p](#http-progress-response-p)
       * [http-progress-current](#http-progress-current)
@@ -83,7 +82,7 @@
 ### Variable: <a name="*http-user-agent*"><em>\*http-user-agent\*</em></a>
 
 User-Agent ヘッダに渡される値のデフォルト値を指定するスペシャル変数です。
-デフォルトの値は `xyzzy/(xyzzy のバージョン)` になっています。
+デフォルトの値は `"xyzzy/(xyzzy のバージョン)"` です。
 
 各アプリケーションは適切な値を設定するようにしてください。
 
@@ -91,7 +90,7 @@ User-Agent ヘッダに渡される値のデフォルト値を指定するスペ
 ### Variable: <a name="*http-accept-type*"><em>\*http-accept-type\*</em></a>
 
 Accept ヘッダに渡される値のデフォルト値を指定するスペシャル変数です。
-デフォルトの値は `*/*` になっています。
+デフォルトの値は `"*/*"` です。
 
 
 ----
@@ -915,8 +914,18 @@ __See Also:__
 
   1. [http-response-result](#http-response-result)
   2. [http-response-status](#http-response-status)
-  3. [http-request-uri](#http-request-uri)
-  4. [http-response-header-alist](#http-response-header-alist)
+  3. [http-response-header-alist](#http-response-header-alist)
+  4. [http-request-uri](#http-request-uri)
+
+```lisp
+http-client.api> (http-response-values
+                  (http-get "http://www.google.co.jp/"))
+"<!doctype html>
+</script>"
+200
+(("Cache-Control" . "private, max-age=0") ("Date" . "Thu, 02 Feb 2012 12:44:32 GMT") ...)
+"http://www.google.co.jp/"
+```
 
 
 ### Function: <a name="http-compose-query"><em>http-compose-query</em></a> <i>`PATH` `PARAMS` &optional `ENCODING`</i>
@@ -941,6 +950,10 @@ http-client.api> (http-compose-query "/search"
                                      "q=xyzzy%20%93%C7%82%DD%95%FB&num=30")
 "/search?q=xyzzy%20%93%C7%82%DD%95%FB&num=30"
 ```
+
+__See Also:__
+
+  * [http-compose-form-data](#http-compose-form-data)
 
 
 ### Function: <a name="http-compose-form-data"><em>http-compose-form-data</em></a> <i>`PARAMS` `PORT` &optional `ENCODING`</i>
@@ -976,6 +989,10 @@ http-client.api> (http-compose-form-data
 #<buffer stream 79566604> ;
 "boundary-23vt3uiri0nrp4ftwbnwnuiajo4bvl6r2jcixdyv0"
 ```
+
+__See Also:__
+
+  * [http-compose-query](#http-compose-query)
 
 
 ### Function: <a name="http-client-version"><em>http-client-version</em></a>
