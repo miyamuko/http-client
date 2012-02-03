@@ -112,8 +112,8 @@ http-client は xl-winhttp をラップし利用しやすい API を提供しま
 
 ## KNOWN BUGS
 
-  * http-general-receiver: 取得したレスポンスが UTF-8 の場合に
-    うまく行単位に分割できない場合がある
+  * http-general-receiver: 取得したレスポンスが UTF-8 で、
+    :encoding 引数を指定しない場合にうまく行単位に分割できない場合がある
 
 要望やバグは [GitHub Issues] か [@miyamuko] まで。
 

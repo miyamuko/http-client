@@ -1,5 +1,9 @@
 2012-02-03  MIYAMUKO Katsuyuki
 
+	* (make-line-callback, call-with-each-line): :encoding を指定された場合は
+	内部エンコーディングに変換後にもう一度改行コードのチェックをするようにした
+	これで、UTF-8 の場合でも :encoding を正しく指定すれば問題ない
+
 	* (http-string-receiver, http-buffer-receiver, http-oport-receiver)
 	(http-general-receiver): encoding が non-nil の場合、改行コードも
 	内部コードに変換するようにした

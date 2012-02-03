@@ -98,18 +98,10 @@
 (defun http-general-receiver (callback &key (encoding t) line)
   #'(lambda (status headers content-length)
       (let ((encoding (detect-encoding encoding headers)))
-        (cond (encoding
-               (make-line-callback #'(lambda (line)
-                                       (funcall callback (if line
-                                                             (decode line encoding)
-                                                           nil)))
-                                   :normalize-eol-code t))
-              (line
-               (make-line-callback callback
-                                   :normalize-eol-code t))
+        (cond ((or encoding line)
+               (make-line-callback callback :encoding encoding :normalize-eol-code t))
               (t
-               #'(lambda (chunk)
-                   (funcall callback chunk)))
+               callback)
               ))))
 
 (defmacro http-cond-receiver ((status headers content-length) &body forms)
@@ -135,41 +127,48 @@
                          #'(lambda () r)
                        r)))
                (when close
-                 (close sink)))))
-    (cond (encoding
-           ;; chunk はバイト単位で文字の途中で分割されているか分からないため、
-           ;; 行単位でエンコーディングの変換を行う
-           (make-line-callback
-            #'(lambda (line)
-                (if line
-                    (decode line encoding sink)
-                  (finish-stream)))
-            :normalize-eol-code normalize-eol-code))
-          (t
-           #'(lambda (chunk)
-               (if chunk
-                   (princ chunk sink)
-                 (finish-stream))))
-          )))
+                 (close sink))))
+           (write-stream (chunk)
+             (if chunk
+                 (princ chunk sink)
+               (finish-stream))))
+    (if encoding
+        ;; chunk はバイト単位で文字の途中で分割されているかもしれないため、
+        ;; 行単位でエンコーディングの変換を行う
+        (make-line-callback #'write-stream
+                            :normalize-eol-code normalize-eol-code
+                            :encoding encoding)
+      #'write-stream)))
 
-(defun make-line-callback (callback &key normalize-eol-code)
+(defun make-line-callback (callback &key encoding normalize-eol-code)
   (let (buffer)
     #'(lambda (chunk)
-        (setf buffer (concat buffer chunk))
-        (while (string-match "\r\n\\|\r\\|\n" buffer)
-          (let ((before (if normalize-eol-code
-                            (concat (substring buffer 0 (match-beginning 0)) "\n")
-                          (substring buffer 0 (match-end 0))))
-                (after (substring buffer (match-end 0))))
-            (funcall callback before)
-            (setf buffer after)))
-        ;; ストリームの終端に達した場合 (chunk が nil)、
-        ;; 残っているバッファの内容をコールバックに伝える
+        (setf buffer (call-with-each-line (concat buffer chunk)
+                                          (if encoding
+                                              #'(lambda (line)
+                                                  (call-with-each-line (decode line encoding) callback
+                                                                       :normalize-eol-code normalize-eol-code
+                                                                       :eos-p t))
+                                            callback)
+                                          :normalize-eol-code normalize-eol-code
+                                          :eos-p (not chunk)))
         (unless chunk
-          (when (string/= "" buffer)
-            (funcall callback buffer))
-          (setf buffer nil)
           (funcall callback nil)))))
+
+(defun call-with-each-line (buffer callback &key normalize-eol-code eos-p)
+  (while (string-match "\r\n\\|\r\\|\n" buffer)
+    (let ((before (if normalize-eol-code
+                      (concat (substring buffer 0 (match-beginning 0)) "\n")
+                    (substring buffer 0 (match-end 0))))
+          (after (substring buffer (match-end 0))))
+      (funcall callback before)
+      (setf buffer after)))
+  ;; ストリームの終端に達した場合 (chunk が nil)、
+  ;; 残っているバッファの内容をコールバックに伝える
+  (when (and eos-p (< 0 (length buffer)))
+    (funcall callback buffer)
+    (setf buffer nil))
+  buffer)
 
 
 (provide "http-client/api/receiver")
