@@ -30,7 +30,8 @@
 
 (in-package :http-client.base)
 
-(export '(add-default-header
+(export '(detect-encoding-by-content-type
+          add-default-header
           content-type-header-value
           format-form-data-header
           raw-headers->text
@@ -39,6 +40,16 @@
 
 (defparameter *content-type-form-urlencoded* "application/x-www-form-urlencoded")
 (defparameter *content-type-form-data* "multipart/form-data; boundary=")
+
+(defun detect-encoding-by-content-type (headers)
+  (let ((content-type (cdr (assoc "Content-Type" headers :test #'equalp))))
+    (when (and content-type
+               (string-matchp "charset=\"?\\([^ ;\"]+\\)\"?" content-type))
+      (let* ((charset (match-string 1))
+             (encoding (gethash charset *mime-charset-name-hash-table*)))
+        (when (eq encoding *encoding-utf8*)
+          (setf encoding *encoding-utf8n*))
+        encoding))))
 
 (defun add-default-header (request header value)
   (when (and header value

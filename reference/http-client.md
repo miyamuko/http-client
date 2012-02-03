@@ -509,23 +509,87 @@ __See Also:__
   * [http-response-wait](#http-response-wait)
 
 
-### Function: <a name="http-string-receiver"><em>http-string-receiver</em></a>
+### Function: <a name="http-string-receiver"><em>http-string-receiver</em></a> <i>&key (`:encoding` t)</i>
 
 レスポンス・ボディを文字列で受信するための receiver です。
 
   * デフォルトの receiver です。
+  * `:encoding` にエンコーディングを指定した場合は、指定されたエンコーディングで
+    内部エンコーディングに変換します。
+  * `:encoding` に `non-nil` を指定した場合は、Content-Type の charaset パラメータで
+    指定されたエンコーディングで内部エンコーディングに変換します。
+    charaset からエンコーディングを特定できない場合、
+    内部エンコーディングへの変換は行いません。
+  * `:encoding` に `nil` または `:binary` を指定した場合は、
+    内部エンコーディングへの変換は行いません。
   * [http-response-result](#http-response-result) はレスポンス・ボディを文字列で返します。
+
+```lisp
+http-client.api> (http-response-result
+                  (http-get "http://zip.ricollab.jp/1120002.json"))
+"{
+  \"zipcode\": \"1120002\",
+  \"address\": {
+    \"prefecture\": \"東京都\",
+    \"city\": \"文京区\",
+    \"town\": \"小石川\"
+  },
+  \"yomi\": {
+    \"prefecture\": \"トウキョウト\",
+    \"city\": \"ブンキョウク\",
+    \"town\": \"コイシカワ\"
+  }
+}
+"
+
+http-client.api> (http-response-result
+                  (http-get "http://zip.ricollab.jp/1120002.json"
+                            :receiver (http-string-receiver :encoding *encoding-utf8n*)))
+"{
+  \"zipcode\": \"1120002\",
+  \"address\": {
+    \"prefecture\": \"東京都\",
+    \"city\": \"文京区\",
+    \"town\": \"小石川\"
+  },
+  \"yomi\": {
+    \"prefecture\": \"トウキョウト\",
+    \"city\": \"ブンキョウク\",
+    \"town\": \"コイシカワ\"
+  }
+}
+"
+
+http-client.api> (http-response-result
+                  (http-get "http://zip.ricollab.jp/1120002.json"
+                            :receiver (http-string-receiver :encoding nil)))
+"{
+  \"zipcode\": \"1120002\",
+  \"address\": {
+    \"prefecture\": \"譚ｱ莠ｬ驛ｽ\",
+    \"city\": \"譁?ｺｬ蛹ｺ\",
+    \"town\": \"蟆冗浹蟾?
+  },
+  \"yomi\": {
+    \"prefecture\": \"繝医え繧ｭ繝ｧ繧ｦ繝?,
+    \"city\": \"繝悶Φ繧ｭ繝ｧ繧ｦ繧ｯ\",
+    \"town\": \"繧ｳ繧､繧ｷ繧ｫ繝ｯ\"
+  }
+}
+"
+```
 
 __See Also:__
 
   * [http-request](#http-request)
 
 
-### Function: <a name="http-file-receiver"><em>http-file-receiver</em></a> <i>`FILENAME` &key `:encoding` `:if-exists` `:share`</i>
+### Function: <a name="http-file-receiver"><em>http-file-receiver</em></a> <i>`FILENAME` &key (`:encoding` :binary) (`:if-exists` :new-version) (`:share` nil)</i>
 
 レスポンス・ボディを `FILENAME` で指定したファイルに保存するための receiver です。
 受信しながらファイルに書き込むため、巨大なファイルをダウンロードする場合でもメモリを圧迫しません。
 
+  * `:encoding`, `:if-exists`, `:share` は open 関数にそのまま指定されます。
   * `:encoding` のデフォルト値は `:binary` です。
   * `:if-exists` のデフォルト値は `:new-version` です。
   * `:share` のデフォルト値は `nil` です。
@@ -548,25 +612,39 @@ __See Also:__
   * [http-request](#http-request)
 
 
-### Function: <a name="http-buffer-receiver"><em>http-buffer-receiver</em></a> <i>`BUFFER`</i>
+### Function: <a name="http-buffer-receiver"><em>http-buffer-receiver</em></a> <i>`BUFFER` &key (`:encoding` t)</i>
 
 レスポンス・ボディを `BUFFER` で指定したバッファに書きこむための receiver です。
 
   * `BUFFER` にバッファ名を指定した場合、同名のバッファがあった場合でも新規にバッファを作成します。
   * `BUFFER` にバッファを指定した場合、指定したバッファの末尾に書き込みます。
+  * `:encoding` にエンコーディングを指定した場合は、指定されたエンコーディングで
+    内部エンコーディングに変換します。
+  * `:encoding` に `non-nil` を指定した場合は、Content-Type の charaset パラメータで
+    指定されたエンコーディングで内部エンコーディングに変換します。
+    charaset からエンコーディングを特定できない場合、
+    内部エンコーディングへの変換は行いません。
+  * `:encoding` に `nil` または `:binary` を指定した場合は、
+    内部エンコーディングへの変換は行いません。
   * [http-response-result](#http-response-result) はバッファを返します。
 
 ```lisp
-(defun find-uri (uri)
-  (interactive "sURL: ")
-  (http-get uri
-            :receiver (http-buffer-receiver uri)
-            :oncomplete #'(lambda (buffer status headers uri)
-                            (pop-to-buffer buffer)
-                            (refresh-screen))
-            :onerror #'(lambda (err) (msgbox "Error: ~A" err))
-            :onabort #'(lambda (err) (msgbox "Abort: ~A" err))
-            ))
+;; www.baidu.com  は Content-Type: text/html;charset=gb2312 なので自動判別可能だが、
+;; news.baidu.com は Content-Type: text/html なので encoding を明示する必要がある
+http-client.api> (http-response-values
+                  (http-get "http://news.baidu.com/"
+                            :receiver (http-buffer-receiver "baidu"
+                                                            :encoding *encoding-euc-gb*)
+                            :oncomplete #'(lambda (buffer status headers uri)
+                                            (pop-to-buffer buffer)
+                                            (refresh-screen))
+                            :onerror #'(lambda (err) (msgbox "Error: ~A" err))
+                            :onabort #'(lambda (err) (msgbox "Abort: ~A" err))
+                            ))
+#<buffer: baidu>
+200
+(... ("Content-Type" . "text/html") ...)
+"http://news.baidu.com/"
 ```
 
 __See Also:__
@@ -574,11 +652,19 @@ __See Also:__
   * [http-request](#http-request)
 
 
-### Function: <a name="http-oport-receiver"><em>http-oport-receiver</em></a> <i>`SINK` `FLUSHER` &key `:close` `:finish-output`</i>
+### Function: <a name="http-oport-receiver"><em>http-oport-receiver</em></a> <i>`SINK` `FLUSHER` &key (`:encoding` t) `:close` `:finish-output`</i>
 
 レスポンス・ボディを `SINK` で指定したストリームに書きこむための receiver です。
 
   * `SINK` には出力ストリームを、`FLUSHER` には `SINK` を引数に取る関数を指定します。
+  * `:encoding` にエンコーディングを指定した場合は、指定されたエンコーディングで
+    内部エンコーディングに変換します。
+  * `:encoding` に `non-nil` を指定した場合は、Content-Type の charaset パラメータで
+    指定されたエンコーディングで内部エンコーディングに変換します。
+    charaset からエンコーディングを特定できない場合、
+    内部エンコーディングへの変換は行いません。
+  * `:encoding` に `nil` または `:binary` を指定した場合は、
+    内部エンコーディングへの変換は行いません。
   * `:finish-output` に `non-nil` を指定すると、レスポンス・ボディ終端に達した時点で
     `SINK` を finish-output します。
     デフォルトは `nil` です。
@@ -612,7 +698,7 @@ __See Also:__
   * [http-request](#http-request)
 
 
-### Function: <a name="http-general-receiver"><em>http-general-receiver</em></a> <i>`CALLBACK` &key `:line`</i>
+### Function: <a name="http-general-receiver"><em>http-general-receiver</em></a> <i>`CALLBACK` &key (`:encoding` t) `:line`</i>
 
 レスポンス・ボディを受信するたびに `CALLBACK` で指定した任意の処理を行うための receiver です。
 
@@ -627,6 +713,14 @@ __See Also:__
       このときにアプリケーションレベルでは不完全なデータが `CALLBACK` に指定される可能性があります。
       その後 `CALLBACK` に `nil` を指定して呼び出します。
       その時の戻り値が [http-response-result](#http-response-result) の戻り値となります。
+  * `:encoding` にエンコーディングを指定した場合は、指定されたエンコーディングで
+    内部エンコーディングに変換します。
+  * `:encoding` に `non-nil` を指定した場合は、Content-Type の charaset パラメータで
+    指定されたエンコーディングで内部エンコーディングに変換します。
+    charaset からエンコーディングを特定できない場合、
+    内部エンコーディングへの変換は行いません。
+  * `:encoding` に `nil` または `:binary` を指定した場合は、
+    内部エンコーディングへの変換は行いません。
   * レスポンス・ボディの終端に達した場合は、`CALLBACK` に `nil` を指定して呼び出します。
     その時の戻り値が [http-response-result](#http-response-result) の戻り値となります。
 

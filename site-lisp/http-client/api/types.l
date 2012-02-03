@@ -31,7 +31,7 @@
 
 (export '(http-progress
           http-progress-p
-          http-progress-direction
+          http-progress-response-p
           http-progress-current
           http-progress-total
           http-progress-percent

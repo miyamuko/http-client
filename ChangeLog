@@ -1,3 +1,10 @@
+2012-02-03  MIYAMUKO Katsuyuki
+
+	* (http-string-receiver, http-buffer-receiver, http-oport-receiver)
+	(http-general-receiver): encoding をパラメータを追加。
+	encoding が non-nil の場合、charset パラメータを見て文字エンコーディングを
+	自動的に変換するようにした
+
 2012-02-02  MIYAMUKO Katsuyuki
 
 	* (set-proxy, get-proxy-by-ie-config): IE の設定を見てプロキシを設定

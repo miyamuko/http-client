@@ -32,6 +32,7 @@
 (export '(make-buffer
           values-plist
           encode
+          decode
           errbox
           string-byte-size
           ))
@@ -45,12 +46,20 @@
                (getf plist k))
            keys)))
 
-(defun encode (v encoding)
+(defun encode (v encoding &optional output-stream)
   (typecase v
     (null "")
     (string
      (if encoding
-         (convert-encoding-from-internal encoding v)
+         (convert-encoding-from-internal encoding v output-stream)
+       v))))
+
+(defun decode (v encoding &optional output-stream)
+  (typecase v
+    (null "")
+    (string
+     (if encoding
+         (convert-encoding-to-internal encoding v output-stream)
        v))))
 
 (defun errbox (fmt &rest args)

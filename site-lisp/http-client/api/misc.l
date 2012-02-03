@@ -50,6 +50,17 @@
         ))
 
 
+(defun detect-encoding (encoding headers)
+  (cond ((char-encoding-p encoding)
+         encoding)
+        ((or (not encoding)
+             (eq encoding :binary))
+         nil)
+        (t
+         (detect-encoding-by-content-type headers))
+        ))
+
+
 (provide "http-client/api/misc")
 
 ;;; End

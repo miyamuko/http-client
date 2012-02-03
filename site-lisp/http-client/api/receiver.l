@@ -38,16 +38,17 @@
           http-cond-receiver
           ))
 
-(defun http-string-receiver ()
+(defun http-string-receiver (&key (encoding t))
   #'(lambda (status headers content-length)
       (let ((sink (if content-length
                       (si:*make-string-output-stream-from-string (make-buffer content-length))
                     (make-string-output-stream))))
         (make-stream-callback sink #'get-output-stream-string
+                              :encoding (detect-encoding encoding headers)
                               :enclose t)
         )))
 
-(defun http-file-receiver (filename &key encoding if-exists share)
+(defun http-file-receiver (filename &key (encoding :binary) (if-exists :new-version) (share nil))
   ;; default-directory が変わっているかもしれないので、
   ;; この時点でフルパスにしておく
   (setf filename (namestring filename))
@@ -59,20 +60,24 @@
         (make-stream-callback sink #'namestring)
         )))
 
-(defun http-buffer-receiver (buffer)
+(defun http-buffer-receiver (buffer &key (encoding t))
   #'(lambda (status headers content-length)
-      ;; TODO encoding?
       (let* ((buffer (if (and (bufferp buffer) (not (deleted-buffer-p buffer)))
                          buffer
                        (create-new-buffer buffer)))
-             (sink (make-buffer-stream buffer)))
-        (make-stream-callback sink #'buffer-stream-buffer)
+             (sink (make-buffer-stream buffer))
+             (encoding (detect-encoding encoding headers)))
+        (when encoding
+          (set-buffer-fileio-encoding encoding buffer))
+        (make-stream-callback sink #'buffer-stream-buffer
+                              :encoding encoding)
         )))
 
-(defun http-oport-receiver (sink flusher &key close finish-output)
+(defun http-oport-receiver (sink flusher &key (encoding t) close finish-output)
   (check-type sink output-stream)
   #'(lambda (status headers content-length)
       (make-stream-callback sink flusher
+                            :encoding (detect-encoding encoding headers)
                             :close close
                             :finish-output finish-output)
       ))
@@ -84,27 +89,20 @@
           )
       ))
 
-(defun http-general-receiver (callback &key line)
+(defun http-general-receiver (callback &key (encoding t) line)
   #'(lambda (status headers content-length)
-      (if line
-          (let (buffer)
-            #'(lambda (chunk)
-                (setf buffer (concat buffer chunk))
-                (while (string-match "\r\n\\|\r\\|\n" buffer)
-                  (let ((before (substring buffer 0 (match-end 0)))
-                        (after (substring buffer (match-end 0))))
-                    (funcall callback before)
-                    (setf buffer after)))
-                ;; ストリームの終端に達した場合 (chunk が nil)、
-                ;; 残っているバッファの内容をコールバックに伝える
-                (unless chunk
-                  (when (string/= "" buffer)
-                    (funcall callback buffer))
-                  (setf buffer nil)
-                  (funcall callback nil))))
-        #'(lambda (chunk)
-            (funcall callback chunk))
-        )))
+      (let ((encoding (detect-encoding encoding headers)))
+        (cond (encoding
+               (make-line-callback #'(lambda (line)
+                                       (funcall callback (if line
+                                                             (decode line encoding)
+                                                           nil)))))
+              (line
+               (make-line-callback callback))
+              (t
+               #'(lambda (chunk)
+                   (funcall callback chunk)))
+              ))))
 
 (defmacro http-cond-receiver ((status headers content-length) &body forms)
   `#'(lambda (,status ,headers ,content-length)
@@ -112,26 +110,55 @@
                 ,status ,headers ,content-length)))
 (setf (get 'http-cond-receiver 'ed:lisp-indent-hook) 1)
 
-(defun make-stream-callback (sink flusher &key enclose (close t) (finish-output t))
+(defun make-stream-callback (sink flusher &key encoding enclose (close t) (finish-output t))
   (check-type sink output-stream)
   (unless flusher
     (setf flusher #'identity))
-  #'(lambda (chunk)
-      (if chunk
-          (princ chunk sink)
-        (unwind-protect
-            (progn
-              (when finish-output
-                (finish-output sink))
-              (let ((r (funcall flusher sink)))
-                (if enclose
-                    ;; http-client を表示したときにレスポンスの内容が
-                    ;; 長々と出力されないようにクロージャで隠蔽する
-                    ;; See also: http-response-result
-                    #'(lambda () r)
-                  r)))
-          (when close
-            (close sink))))))
+  (labels ((finish-stream ()
+             (unwind-protect
+                 (progn
+                   (when finish-output
+                     (finish-output sink))
+                   (let ((r (funcall flusher sink)))
+                     (if enclose
+                         ;; http-client を表示したときにレスポンスの内容が
+                         ;; 長々と出力されないようにクロージャで隠蔽する
+                         ;; See also: http-response-result
+                         #'(lambda () r)
+                       r)))
+               (when close
+                 (close sink)))))
+    (cond (encoding
+           ;; chunk はバイト単位で文字の途中で分割されているか分からないため、
+           ;; 行単位でエンコーディングの変換を行う
+           (make-line-callback
+            #'(lambda (line)
+                (if line
+                    (decode line encoding sink)
+                  (finish-stream)))))
+          (t
+           #'(lambda (chunk)
+               (if chunk
+                   (princ chunk sink)
+                 (finish-stream))))
+          )))
+
+(defun make-line-callback (callback)
+  (let (buffer)
+    #'(lambda (chunk)
+        (setf buffer (concat buffer chunk))
+        (while (string-match "\r\n\\|\r\\|\n" buffer)
+          (let ((before (substring buffer 0 (match-end 0)))
+                (after (substring buffer (match-end 0))))
+            (funcall callback before)
+            (setf buffer after)))
+        ;; ストリームの終端に達した場合 (chunk が nil)、
+        ;; 残っているバッファの内容をコールバックに伝える
+        (unless chunk
+          (when (string/= "" buffer)
+            (funcall callback buffer))
+          (setf buffer nil)
+          (funcall callback nil)))))
 
 
 (provide "http-client/api/receiver")
