@@ -809,21 +809,17 @@ __See Also:__
 
 指定した `CLIENT` を中断します。
 
-引数には http-{get,head,post,put,delete,request} の戻り値を指定可能です。
+引数には以下の関数の戻り値を指定可能です。
+
+  * [http-get](#http-get)
+  * [http-head](#http-head)
+  * [http-post](#http-post)
+  * [http-put](#http-put)
+  * [http-delete](#http-delete)
+  * [http-request](#http-request)
 
 通信を中断したなら t を返します。
 既に通信が終了していたら何もせず `nil` を返します。
-
-__See Also:__
-
-  * [http-request-aborted-p](#http-request-aborted-p)
-
-
-### Function: <a name="http-request-aborted-p"><em>http-request-aborted-p</em></a> <i>`CLIENT`</i>
-
-`CLIENT` を [abort した場合](#http-request-abort) t を返します。
-
-引数には http-{get,head,post,put,delete,request} の戻り値を指定可能です。
 
 ```lisp
 http-client.api> (let ((req (http-get "www.google.co.jp" "/" :async t)))
@@ -842,7 +838,10 @@ t ;
 
 __See Also:__
 
+  * [http-response-wait](#http-response-wait)
   * [http-request-aborted-p](#http-request-aborted-p)
+  * [http-request-completed-p](#http-request-completed-p)
+  * [http-request-waiting-p](#http-request-waiting-p)
 
 
 ### Function: <a name="http-response-wait"><em>http-response-wait</em></a> <i>`CLIENT` &key `:nowait` `:no-redraw` `:sleep` (`:timeout` 30) (`:interval` 0.1) (`:ready-state` :complete) (`:signal-error` t)</i>
@@ -892,6 +891,34 @@ __See Also:__
 
     デフォルトは t です。
 
+__See Also:__
+
+  * [http-request-abort](#http-request-abort)
+  * [http-request-aborted-p](#http-request-aborted-p)
+  * [http-request-completed-p](#http-request-completed-p)
+  * [http-request-waiting-p](#http-request-waiting-p)
+
+
+### Function: <a name="http-request-aborted-p"><em>http-request-aborted-p</em></a> <i>`CLIENT`</i>
+
+`CLIENT` を [abort した場合](#http-request-abort) t を返します。
+
+引数には以下の関数の戻り値を指定可能です。
+
+  * [http-get](#http-get)
+  * [http-head](#http-head)
+  * [http-post](#http-post)
+  * [http-put](#http-put)
+  * [http-delete](#http-delete)
+  * [http-request](#http-request)
+
+__See Also:__
+
+  * [http-request-abort](#http-request-abort)
+  * [http-response-wait](#http-response-wait)
+  * [http-request-completed-p](#http-request-completed-p)
+  * [http-request-waiting-p](#http-request-waiting-p)
+
 
 ### Function: <a name="http-request-completed-p"><em>http-request-completed-p</em></a> <i>`CLIENT`</i>
 
@@ -900,14 +927,42 @@ __See Also:__
   * リクエストを [abort した場合](#http-request-abort) でも t を返します。
   * リクエストが完了したか abort したかは、[http-request-aborted-p](#http-request-aborted-p) で区別します。
 
-引数には http-{get,head,post,put,delete,request} の戻り値を指定可能です。
+引数には以下の関数の戻り値を指定可能です。
+
+  * [http-get](#http-get)
+  * [http-head](#http-head)
+  * [http-post](#http-post)
+  * [http-put](#http-put)
+  * [http-delete](#http-delete)
+  * [http-request](#http-request)
+
+__See Also:__
+
+  * [http-request-abort](#http-request-abort)
+  * [http-response-wait](#http-response-wait)
+  * [http-request-aborted-p](#http-request-aborted-p)
+  * [http-request-waiting-p](#http-request-waiting-p)
 
 
 ### Function: <a name="http-request-waiting-p"><em>http-request-waiting-p</em></a> <i>`CLIENT`</i>
 
 指定した `CLIENT` がまだ処理中なら t を返します。
 
-引数には http-{get,head,post,put,delete,request} の戻り値を指定可能です。
+引数には以下の関数の戻り値を指定可能です。
+
+  * [http-get](#http-get)
+  * [http-head](#http-head)
+  * [http-post](#http-post)
+  * [http-put](#http-put)
+  * [http-delete](#http-delete)
+  * [http-request](#http-request)
+
+__See Also:__
+
+  * [http-request-abort](#http-request-abort)
+  * [http-response-wait](#http-response-wait)
+  * [http-request-aborted-p](#http-request-aborted-p)
+  * [http-request-completed-p](#http-request-completed-p)
 
 
 ### Function: <a name="http-request-uri"><em>http-request-uri</em></a> <i>`CLIENT`</i>
