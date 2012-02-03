@@ -22,7 +22,7 @@
 ;; WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ;;
-;; xl-winhttp/test/httpd.js を利用したテスト。
+;; https://github.com/miyamuko/node-test-httpd を利用したテスト。
 ;;
 
 ;;; Code:
@@ -47,29 +47,30 @@
 (remove-all-tests :http-client.test.api-http-get)
 
 (define-test http-client/api-http-get
-  (multiple-value-bind (status headers body)
-      (http-get "http://localhost:3000/snoop" :async nil)
-    (assert-equal "200" status)
-    (assert-equal '("application/json; charset=utf-8")
+  (multiple-value-bind (body status headers uri)
+      (http-response-values
+       (http-get "http://localhost:3000/snoop"))
+    (assert-equal 200 status)
+    (assert-equal "application/json; charset=utf-8"
         ($ headers "content-type"))
     (let ((json (json-decode body)))
       (assert-equal "GET" ($ json "method"))
       (assert-equal nil ($ json "query"))
       (assert-equal nil ($ json "body"))
-      (assert-equal (format nil "xyzzy.http/~A" (software-version))
+      (assert-equal (format nil "xyzzy/~A" (software-version))
           ($ json "headers" "user-agent"))
       )
     )
   )
 
-(define-test http-client/api-http-get/header
-  (multiple-value-bind (status headers body)
-      (http-get "http://localhost:3000/snoop"
-                :headers `(:X-Yzzy-Version ,(software-version)
-                           :X-Hoge 1
-                           :X-Hoge 2
-                           :X-Hoge 3)
-                :async nil)
+(define-test http-client/api-http-get/headers
+  (multiple-value-bind (body status headers uri)
+      (http-response-values
+       (http-get "http://localhost:3000/snoop"
+                 :headers `(:X-Yzzy-Version ,(software-version)
+                            :X-Hoge 1
+                            :X-Hoge 2
+                            :X-Hoge 3)))
     (let ((json (json-decode body)))
       (assert-equal (software-version) ($ json "headers" "X-Yzzy-Version"))
       ;; Express がまとめてる?
@@ -79,11 +80,11 @@
   )
 
 (define-test http-client/api-http-get/query
-  (multiple-value-bind (status headers body)
-      (http-get "http://localhost:3000/snoop"
-                :query '((q "xyzzy 読み方") (num 50))
-                :encoding *encoding-sjis*
-                :async nil)
+  (multiple-value-bind (body status headers uri)
+      (http-response-values
+       (http-get "http://localhost:3000/snoop"
+                 :query '((q "xyzzy 読み方") (num 50))
+                 :encoding *encoding-sjis*))
     (let ((json (json-decode body)))
       (assert-equal "xyzzy%20%93%C7%82%DD%95%FB" ($ json "query" "q"))
       (assert-equal "50" ($ json "query" "num"))
@@ -92,125 +93,68 @@
   )
 
 (define-test http-client/api-http-get/no-redirect
-  (multiple-value-bind (status headers body)
-      (http-get "localhost:3000" "/redirect?url=http://localhost:3000/snoop&status=301")
-    (assert-equal "200" status)
+  (multiple-value-bind (body status headers uri)
+      (http-response-values
+       (http-get "http://localhost:3000/redirect?url=http://localhost:3000/snoop&status=301"))
+    (assert-equal 200 status)
     (assert-equal "GET" ($ (json-decode body) "method")))
-  (multiple-value-bind (status headers body)
-      (http-get "localhost:3000" "/redirect?url=http://localhost:3000/snoop&status=302")
-    (assert-equal "200" status)
+  (multiple-value-bind (body status headers uri)
+      (http-response-values
+       (http-get "http://localhost:3000/redirect?url=http://localhost:3000/snoop&status=302"))
+    (assert-equal 200 status)
     (assert-equal "GET" ($ (json-decode body) "method")))
-  (multiple-value-bind (status headers body)
-      (http-get "localhost:3000" "/redirect?url=http://localhost:3000/snoop&status=301"
-                :no-redirect t)
-    (assert-equal "301" status)
-    (assert-equal '("http://localhost:3000/snoop")
+  (multiple-value-bind (body status headers uri)
+      (http-response-values
+       (http-get "http://localhost:3000/redirect?url=http://localhost:3000/snoop&status=301"
+                 :no-redirect t))
+    (assert-equal 301 status)
+    (assert-equal "http://localhost:3000/snoop"
         ($ headers "Location")))
-  (multiple-value-bind (status headers body)
-      (http-get "localhost:3000" "/redirect?url=http://localhost:3000/snoop&status=302"
-                :no-redirect t)
-    (assert-equal "302" status)
-    (assert-equal '("http://localhost:3000/snoop")
-        ($ headers "Location")))
-  )
-
-(define-test http-client/api-http-get/async-no-redirect
-  (let (status headers body)
-    (http-get "localhost:3000" "/redirect?url=http://localhost:3000/snoop&status=302"
-              :no-redirect t :async t
-              :oncomplete #'(lambda (s h b)
-                              (setf status s headers h body h)))
-    (sleep-for 1)
-    (assert-equal "302" status)
-    (assert-equal '("http://localhost:3000/snoop")
+  (multiple-value-bind (body status headers uri)
+      (http-response-values
+       (http-get "http://localhost:3000/redirect?url=http://localhost:3000/snoop&status=302"
+                 :no-redirect t))
+    (assert-equal 302 status)
+    (assert-equal "http://localhost:3000/snoop"
         ($ headers "Location")))
   )
 
-(define-test http-client/api-http-get/sink
-  (let* ((sink-chunks nil)
-         (sink-abort-p nil)
-         (sink-close-p nil)
-         (sink-flush-p nil)
-         (flusher-call-p nil)
-         (sink (make-general-output-stream
-                #'(lambda (chunk)
-                    (push chunk sink-chunks))
-                #'(lambda (abort)
-                    (setf sink-abort-p abort)
-                    (setf sink-close-p t))
-                #'(lambda ()
-                    (setf sink-flush-p t)))))
-    (multiple-value-bind (status headers flusher-result)
-        (http-get "localhost:3000" "/snoop"
-                  :sink sink
-                  :flusher #'(lambda (sink headers)
-                               (setf flusher-call-p t)
-                               (list sink headers)))
-      (assert-equal (list sink headers) flusher-result)
-      ;; close は http-get 内では呼ばれない
-      (assert-equal nil sink-abort-p)
-      (assert-equal nil sink-close-p)
-      (assert-equal t sink-flush-p)
-      (assert-equal t flusher-call-p)
-      (let ((json (json-decode (format nil "~{~A~}" (nreverse sink-chunks)))))
-        (assert-equal "GET" ($ json "method"))
-        )
-
-      (close sink :abort t)
-      (assert-equal t sink-close-p)
-      (assert-equal t sink-abort-p)
-      )
-    )
+(define-test http-client/api-http-get/no-redirect-callback
+  (let (body status headers uri)
+    (http-response-wait
+     (http-get "http://localhost:3000/redirect?url=http://localhost:3000/snoop&status=302"
+               :no-redirect t
+               :oncomplete #'(lambda (&rest args)
+                               (setf (values body status headers uri)
+                                     (values-list args)))))
+    (assert-equal 302 status)
+    (assert-equal "http://localhost:3000/snoop"
+        ($ headers "Location")))
   )
 
-(define-test http-client/api-http-get/flusher
-  (let* ((sink-flush-p nil)
-         (sink (make-general-output-stream
-                #'(lambda (chunk)) nil
-                #'(lambda ()
-                    (setf sink-flush-p t)))))
-    (multiple-value-bind (status headers flusher-result)
-        (http-get "localhost:3000" "/snoop"
-                  :sink sink
-                  :flusher nil)
-      (assert-equal nil flusher-result)
-      ;; flusher が nil でも stream は flush されるか
-      (assert-equal t sink-flush-p)
-      )
-    )
-  )
-
-(define-test http-client/api-http-get/null-sink-flusher
-  (multiple-value-bind (status headers flusher-result)
-      (http-get "localhost:3000" "/snoop"
-                :sink nil
-                :flusher nil)
-    (assert-equal nil flusher-result)
-    )
-  )
-
-(define-test http-client/api-http-get/async-oncomplete
+(define-test http-client/api-http-get/oncomplete
   (let (oncomplete-called-p
         oncomplete-args
         onerror-called-p
         onerror-args)
-    (http-get "localhost:3000" "/snoop"
-              :async t
-              :oncomplete #'(lambda (&rest args)
-                              (setf oncomplete-called-p t
-                                    oncomplete-args args))
-              :onerror #'(lambda (&rest args)
-                           (setf onerror-called-p t
-                                 onerror-args args)))
-    (sleep-for 1.5)
+    (http-response-wait
+     (http-get "http://localhost:3000/snoop"
+               :oncomplete #'(lambda (&rest args)
+                               (setf oncomplete-called-p t
+                                     oncomplete-args args))
+               :onerror #'(lambda (&rest args)
+                            (setf onerror-called-p t
+                                  onerror-args args))))
     (assert-equal nil onerror-called-p)
     (assert-equal nil onerror-args)
     (assert-equal t oncomplete-called-p)
-    (assert-equal "200" (nth 0 oncomplete-args))
-    (assert-equal '("application/json; charset=utf-8")
-        ($ (nth 1 oncomplete-args) "content-type"))
-    (let ((json (json-decode (nth 2 oncomplete-args))))
+    (let ((json (json-decode (nth 0 oncomplete-args))))
       (assert-equal "GET" ($ json "method")))
+    (assert-equal 200 (nth 1 oncomplete-args))
+    (assert-equal "application/json; charset=utf-8"
+        ($ (nth 2 oncomplete-args) "content-type"))
+    (assert-equal "http://localhost:3000/snoop"
+        (nth 3 oncomplete-args))
     )
   )
 
@@ -219,19 +163,19 @@
         oncomplete-args
         onerror-called-p
         onerror-args)
-    (http-get "localhost:3000" "/disconnect"
-              :async t
-              :oncomplete #'(lambda (&rest args)
-                              (setf oncomplete-called-p t
-                                    oncomplete-args args))
-              :onerror #'(lambda (err)
-                           (setf onerror-called-p t
-                                 onerror-args err)))
-    (sleep-for 1)
+    (http-response-wait
+     (http-get "http://localhost:3000/disconnect"
+               :oncomplete #'(lambda (&rest args)
+                               (setf oncomplete-called-p t
+                                     oncomplete-args args))
+               :onerror #'(lambda (err)
+                            (setf onerror-called-p t
+                                  onerror-args err)))
+     :signal-error nil)
     (assert-equal t onerror-called-p)
-    (assert-type winhttp:winhttp-condition onerror-args)
+    (assert-type http-request-error onerror-args)
     (assert-equal :invalid-server-response
-        (winhttp:winhttp-condition-error-keyword onerror-args))
+        (http-error-keyword onerror-args))
     (assert-equal nil oncomplete-called-p)
     (assert-equal nil oncomplete-args)
     )
@@ -240,14 +184,14 @@
 (define-test http-client/api-http-get/async-handler-error
   (let (onerror-called-p
         onerror-args)
-    (http-get "localhost:3000" "/snoop"
-              :async t
-              :oncomplete #'(lambda (&rest args)
-                              (plain-error "hoge"))
-              :onerror #'(lambda (err)
-                           (setf onerror-called-p t
-                                 onerror-args err)))
-    (sleep-for 1)
+    (http-response-wait
+     (http-get "http://localhost:3000/snoop"
+               :oncomplete #'(lambda (&rest args)
+                               (plain-error "hoge"))
+               :onerror #'(lambda (err)
+                            (setf onerror-called-p t
+                                  onerror-args err)))
+     :signal-error nil)
     (assert-equal t onerror-called-p)
     (assert-type plain-error onerror-args)
     (assert-equal "hoge"

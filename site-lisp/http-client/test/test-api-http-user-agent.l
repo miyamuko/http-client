@@ -43,10 +43,10 @@
 (remove-all-tests :http-client.test.api-http-get)
 
 (define-test http-client/api-http-user-agent/get
-  (multiple-value-bind (body status headers)
+  (multiple-value-bind (body status headers uri)
       (let ((*http-user-agent* "hoge"))
-        (http-get "http://localhost:3000/snoop"
-                  :async nil))
+        (http-response-values
+         (http-get "http://localhost:3000/snoop")))
     (let ((json (json-decode body)))
       (assert-equal "hoge"
           ($ json "headers" "user-agent"))
@@ -55,10 +55,10 @@
   )
 
 (define-test http-client/api-http-user-agent/post
-  (multiple-value-bind (body status headers)
-      (http-post "http://localhost:3000/snoop" nil
-                 :headers `(:User-Agent "fuga")
-                 :async nil)
+  (multiple-value-bind (body status headers uri)
+      (http-response-values
+       (http-post "http://localhost:3000/snoop" nil
+                  :headers `(:User-Agent "fuga")))
     (let ((json (json-decode body)))
       (assert-equal "fuga"
           ($ json "headers" "user-agent"))
