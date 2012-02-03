@@ -522,6 +522,7 @@ __See Also:__
     内部エンコーディングへの変換は行いません。
   * `:encoding` に `nil` または `:binary` を指定した場合は、
     内部エンコーディングへの変換は行いません。
+  * `:encoding` を指定した場合、改行コードも内部コードに変換します。
   * [http-response-result](#http-response-result) はレスポンス・ボディを文字列で返します。
 
 ```lisp
@@ -626,6 +627,8 @@ __See Also:__
     内部エンコーディングへの変換は行いません。
   * `:encoding` に `nil` または `:binary` を指定した場合は、
     内部エンコーディングへの変換は行いません。
+  * `:encoding` を指定した場合、改行コードも内部コードに変換し、
+    buffer-eol-code を適切に設定します。
   * [http-response-result](#http-response-result) はバッファを返します。
 
 ```lisp
@@ -665,6 +668,7 @@ __See Also:__
     内部エンコーディングへの変換は行いません。
   * `:encoding` に `nil` または `:binary` を指定した場合は、
     内部エンコーディングへの変換は行いません。
+  * `:encoding` を指定した場合、改行コードも内部コードに変換します。
   * `:finish-output` に `non-nil` を指定すると、レスポンス・ボディ終端に達した時点で
     `SINK` を finish-output します。
     デフォルトは `nil` です。
@@ -721,6 +725,7 @@ __See Also:__
     内部エンコーディングへの変換は行いません。
   * `:encoding` に `nil` または `:binary` を指定した場合は、
     内部エンコーディングへの変換は行いません。
+  * `:encoding` を指定した場合、または `:line` を指定した場合は、改行コードも内部コードに変換します。
   * レスポンス・ボディの終端に達した場合は、`CALLBACK` に `nil` を指定して呼び出します。
     その時の戻り値が [http-response-result](#http-response-result) の戻り値となります。
 

@@ -61,6 +61,21 @@
         ))
 
 
+(defun fix-eol-code (buffer &key normalize)
+  (with-selected-buffer buffer
+    (save-excursion
+      (goto-char (point-min))
+      (when (scan-buffer "\\(\r\n\\)\\|\\(\r\\)\\|\\(\n\\)" :regexp t)
+        (destructuring-bind (crlf cr lf)
+            (mapcar #'match-string '(1 2 3))
+          (when (and normalize (not lf))
+            (replace-buffer (or crlf cr) "\n"))
+          (set-buffer-eol-code (cond (crlf *eol-crlf*)
+                                     (cr *eol-cr*)
+                                     (lf *eol-lf*)))
+          )))))
+
+
 (provide "http-client/api/misc")
 
 ;;; End

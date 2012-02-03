@@ -1,6 +1,20 @@
 2012-02-03  MIYAMUKO Katsuyuki
 
 	* (http-string-receiver, http-buffer-receiver, http-oport-receiver)
+	(http-general-receiver): encoding が non-nil の場合、改行コードも
+	内部コードに変換するようにした
+	---
+	UTF-8 の場合にうまく行単位に分割できない場合がある
+	;;; xyzzy lisp REPL
+	user> (split-string (convert-encoding-from-internal *encoding-utf8n* "あ\nい\n")
+	                    #\LFD)
+	("縺?縺?")
+	
+	user> (split-string (convert-encoding-from-internal *encoding-utf8n* "あい\nう\n")
+	                    #\LFD)
+	("縺ゅ＞" "縺?")
+
+	* (http-string-receiver, http-buffer-receiver, http-oport-receiver)
 	(http-general-receiver): encoding をパラメータを追加。
 	encoding が non-nil の場合、charset パラメータを見て文字エンコーディングを
 	自動的に変換するようにした

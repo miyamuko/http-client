@@ -45,6 +45,7 @@
                     (make-string-output-stream))))
         (make-stream-callback sink #'get-output-stream-string
                               :encoding (detect-encoding encoding headers)
+                              :normalize-eol-code t
                               :enclose t)
         )))
 
@@ -62,22 +63,27 @@
 
 (defun http-buffer-receiver (buffer &key (encoding t))
   #'(lambda (status headers content-length)
-      (let* ((buffer (if (and (bufferp buffer) (not (deleted-buffer-p buffer)))
-                         buffer
-                       (create-new-buffer buffer)))
-             (sink (make-buffer-stream buffer))
-             (encoding (detect-encoding encoding headers)))
-        (when encoding
-          (set-buffer-fileio-encoding encoding buffer))
-        (make-stream-callback sink #'buffer-stream-buffer
-                              :encoding encoding)
-        )))
+      (let ((buffer (if (and (bufferp buffer) (not (deleted-buffer-p buffer)))
+                        buffer
+                      (create-new-buffer buffer))))
+        (let ((sink (make-buffer-stream buffer))
+              (encoding (detect-encoding encoding headers)))
+          (when encoding
+            (set-buffer-fileio-encoding encoding buffer))
+          (make-stream-callback sink #'(lambda (_)
+                                         (fix-eol-code buffer :normalize (not (null encoding)))
+                                         buffer)
+                                :encoding encoding
+                                ;; buffer-eol-code Çê›íËÇ∑ÇÈïKóvÇ™Ç†ÇÈÇÃÇ≈ÅAeol-code ÇÕ flusher Ç≈ïœä∑
+                                :normalize-eol-code nil)
+          ))))
 
 (defun http-oport-receiver (sink flusher &key (encoding t) close finish-output)
   (check-type sink output-stream)
   #'(lambda (status headers content-length)
       (make-stream-callback sink flusher
                             :encoding (detect-encoding encoding headers)
+                            :normalize-eol-code t
                             :close close
                             :finish-output finish-output)
       ))
@@ -96,9 +102,11 @@
                (make-line-callback #'(lambda (line)
                                        (funcall callback (if line
                                                              (decode line encoding)
-                                                           nil)))))
+                                                           nil)))
+                                   :normalize-eol-code t))
               (line
-               (make-line-callback callback))
+               (make-line-callback callback
+                                   :normalize-eol-code t))
               (t
                #'(lambda (chunk)
                    (funcall callback chunk)))
@@ -110,7 +118,7 @@
                 ,status ,headers ,content-length)))
 (setf (get 'http-cond-receiver 'ed:lisp-indent-hook) 1)
 
-(defun make-stream-callback (sink flusher &key encoding enclose (close t) (finish-output t))
+(defun make-stream-callback (sink flusher &key normalize-eol-code encoding enclose (close t) (finish-output t))
   (check-type sink output-stream)
   (unless flusher
     (setf flusher #'identity))
@@ -135,7 +143,8 @@
             #'(lambda (line)
                 (if line
                     (decode line encoding sink)
-                  (finish-stream)))))
+                  (finish-stream)))
+            :normalize-eol-code normalize-eol-code))
           (t
            #'(lambda (chunk)
                (if chunk
@@ -143,12 +152,14 @@
                  (finish-stream))))
           )))
 
-(defun make-line-callback (callback)
+(defun make-line-callback (callback &key normalize-eol-code)
   (let (buffer)
     #'(lambda (chunk)
         (setf buffer (concat buffer chunk))
         (while (string-match "\r\n\\|\r\\|\n" buffer)
-          (let ((before (substring buffer 0 (match-end 0)))
+          (let ((before (if normalize-eol-code
+                            (concat (substring buffer 0 (match-beginning 0)) "\n")
+                          (substring buffer 0 (match-end 0))))
                 (after (substring buffer (match-end 0))))
             (funcall callback before)
             (setf buffer after)))

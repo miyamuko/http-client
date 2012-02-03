@@ -29,13 +29,30 @@
 
 (in-package :http-client.base)
 
-(export '(make-buffer
+(export '(with-selected-buffer
+          make-buffer
           values-plist
           encode
           decode
           errbox
           string-byte-size
           ))
+
+(defmacro with-selected-buffer (buffer &body body)
+  `(with-set-buffer
+     (let ((#1=#:new ,buffer)
+           (#2=#:old (selected-buffer)))
+       (unwind-protect
+           (if (get-buffer-window #1#)
+               (with-selected-window
+                 (set-window (get-buffer-window #1#))
+                 ,@body)
+             (progn
+               (set-buffer #1#)
+               ,@body))
+         (set-buffer #2#)))))
+(setf (get 'with-selected-buffer 'lisp-indent-hook) 0)
+
 
 (defun make-buffer (&optional (size winhttp:+default-write-buffer-size+))
   (make-vector size :element-type 'character :fill-pointer 0))
