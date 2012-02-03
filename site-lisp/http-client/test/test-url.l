@@ -40,10 +40,33 @@
 (remove-all-tests :http-client.base.test.url)
 
 (define-test add-query-params
-  (fail))
+  (assert-equal "/search?q=xyzzy&num=50"
+      (add-query-params "/search" '(:q "xyzzy" :num 50)))
+  (assert-equal "/search?q=xyzzy&num=50"
+      (add-query-params "/search" '((:q . "xyzzy") (:num . 50))))
+  (assert-equal "/search?q=xyzzy&num=50"
+      (add-query-params "/search" '((:q "xyzzy") (:num 50))))
+
+  (assert-equal "/search?ie=UTF-8&q=xyzzy&num=50"
+      (add-query-params "/search?ie=UTF-8" '((:q "xyzzy") (:num 50))))
+
+  (assert-equal "?q=xyzzy&num=50"
+      (add-query-params nil '((:q "xyzzy") (:num 50))))
+  (assert-equal "?q=xyzzy&num=50"
+      (add-query-params "" '((:q "xyzzy") (:num 50))))
+  (assert-equal "/?q=xyzzy&num=50"
+      (add-query-params "/" '((:q "xyzzy") (:num 50))))
+  )
+
 
 (define-test add-query-string
-  (fail))
+  (assert-equal "/?q=xyzzy&num=50"
+      (add-query-string "/" "q=xyzzy&num=50"))
+  (assert-equal "/?q=xyzzy&num=50"
+      (add-query-string "/?" "q=xyzzy&num=50"))
 
-(define-test url-encode-params
-  (fail))
+  (assert-equal "/?ie=UTF-8&q=xyzzy&num=50"
+      (add-query-string "/?ie=UTF-8" "q=xyzzy&num=50"))
+  (assert-equal "/?ie=UTF-8&q=xyzzy&num=50"
+      (add-query-string "/?ie=UTF-8&" "q=xyzzy&num=50"))
+  )

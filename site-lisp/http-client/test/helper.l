@@ -11,6 +11,8 @@
 
 (export '($
           utf8
+          euc
+          sjis
           bin
           ))
 
@@ -22,8 +24,15 @@
 
 (defun utf8 (str)
   (when str
-    (ed::convert-encoding-from-internal
-     *encoding-utf8n* str)))
+    (convert-encoding-from-internal *encoding-utf8n* str)))
+
+(defun euc (str)
+  (when str
+    (convert-encoding-from-internal *encoding-euc-jp* str)))
+
+(defun sjis (str)
+  (when str
+    (convert-encoding-from-internal *encoding-sjis* str)))
 
 (defun bin (str)
   (when str
