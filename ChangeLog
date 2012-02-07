@@ -1,5 +1,7 @@
 2012-02-07  MIYAMUKO Katsuyuki
 
+	* (*http-redirect-policy*): デフォルトのリダイレクト方法を設定できるようにした
+
 	* (http-request-impl): 送信時の onprogress イベントが不正確だったのを修正
 
 	* (http-request-impl): onprogress イベントハンドラの http-progress 引数を

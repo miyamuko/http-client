@@ -35,6 +35,7 @@
 
 (export '(*http-user-agent*
           *http-accept-type*
+          *http-redirect-policy*
           ;; request functions
           http-get
           http-post
@@ -70,6 +71,7 @@
 
 (defvar *http-user-agent* (format nil "xyzzy/~A" (software-version)))
 (defvar *http-accept-type* "*/*")
+(defvar *http-redirect-policy* :disallow-https-to-http)
 
 ;;; request functions
 
@@ -150,8 +152,7 @@
                                   ,(when *http-user-agent* `(:User-Agent ,*http-user-agent*))
                                   ,(when *http-accept-type* `(:Accept ,*http-accept-type*))
                                   )
-               :options `(;; デフォルトは :disallow-https-to-http
-                          (:redirect-policy ,(if no-redirect :never :always))
+               :options `((:redirect-policy ,(if no-redirect :never *http-redirect-policy*))
                           ;; proxy はあとで設定
                           )
                :credentials `(,(when auth `(:server ,@auth))

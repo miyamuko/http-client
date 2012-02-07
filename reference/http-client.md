@@ -5,6 +5,7 @@
   * [VARIABLES](#variables)
     * [\*http-user-agent\*](#*http-user-agent*)
     * [\*http-accept-type\*](#*http-accept-type*)
+    * [\*http-redirect-policy\*](#*http-redirect-policy*)
   * [CONDITIONS](#conditions)
     * [http-error](#http-error)
       * [http-error-cause](#http-error-cause)
@@ -94,6 +95,21 @@ User-Agent ヘッダに渡される値のデフォルト値を指定するスペ
 Accept ヘッダに渡される値のデフォルト値を指定するスペシャル変数です。
 デフォルトの値は `"*/*"` です。
 
+
+### Variable: <a name="*http-redirect-policy*"><em>\*http-redirect-policy\*</em></a>
+
+リダイレクトが発生した場合のデフォルトの処理を指定スペシャル変数です。
+以下の値を設定可能です。
+
+  * `:never`: リダイレクトしない
+  * `:always`: 常にリダイレクトする
+  * `:disallow-https-to-http`: HTTPS から HTTP へのリダイレクトのみしない
+
+デフォルトは `:disallow-https-to-http` です。
+
+__See Also:__
+
+  * [http-request](#http-request)
 
 ----
 
@@ -444,7 +460,9 @@ HTTP DELETE リクエストを送信します。
 
   * `:no-redirect`
 
-    `non-nil` が与えられた場合、リダイレクションには従わなくなります。
+    `non-nil` を指定した場合、リダイレクションには従わなくなります。
+
+    `nil` を指定した場合は [\*http-redirect-policy\*](#*http-redirect-policy*) の設定に従います。
 
   * `:receiver`
 
@@ -520,6 +538,9 @@ HTTP DELETE リクエストを送信します。
 
 __See Also:__
 
+  * [\*http-user-agent\*](#*http-user-agent*)
+  * [\*http-accept-type\*](#*http-accept-type*)
+  * [\*http-redirect-policy\*](#*http-redirect-policy*)
   * [http-request-uri](#http-request-uri)
   * [http-request-header](#http-request-header)
   * [http-request-header-alist](#http-request-header-alist)
