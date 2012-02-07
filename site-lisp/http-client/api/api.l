@@ -139,7 +139,7 @@
                (emit-progress (progress n)
                  (when n
                    (incf (http-progress-current progress) n)
-                   (emit onprogress progress))))
+                   (emit onprogress (copy-http-progress progress)))))
         (setf request
               (make-http-request
                method

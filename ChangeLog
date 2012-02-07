@@ -1,5 +1,8 @@
 2012-02-07  MIYAMUKO Katsuyuki
 
+	* (http-request-impl): onprogress イベントハンドラの http-progress 引数を
+	copy して渡すようにした
+
 	* (get-proxy-option): 	デフォルトで IE の設定を利用するのはやめた
 	winhttp:get-proxy-for-url は同期処理なので、ホスト名が名前解決できない
 	場合などに長時間ブロックする場合があるため
