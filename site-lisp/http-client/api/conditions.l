@@ -47,6 +47,10 @@
                          (http-error-format-arguments c))))
     )
 
+  (define-condition http-argument-error (http-error)
+    ()
+    #1#)
+
   (define-condition http-timeout-error (http-error)
     ()
     #1#)
@@ -80,7 +84,7 @@
          (make-condition type
                          :keyword keyword
                          :cause c
-                         :format-string "~A (~S)~%~A"
+                         :format-string "~A (~S)~%詳細: ~A"
                          :format-arguments (list msg keyword c)))))
     (t
      c)))
@@ -98,6 +102,12 @@
     (:invalid-server-response
      #4=(values 'http-request-error "リクエストが失敗しました。"))
     (:redirect-failed #4#)
+    (:invalid-parameter
+     #5=(values 'http-argument-error "引数が不正です。"))
+    (:invalid-url #5#)
+    (:unrecognized-scheme #5#)
+    (:invalid-option  #5#)
+    (:option-not-settable  #5#)
     (t
      (values 'http-error "HTTP エラー"))
     ))
