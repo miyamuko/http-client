@@ -1209,3 +1209,8 @@ __See Also:__
 ### Function: <a name="http-client-version"><em>http-client-version</em></a>
 
 本ライブラリのバージョンを文字列で返します。
+
+```lisp
+http-client.api> (http-client-version)
+"0.0.1"
+```
