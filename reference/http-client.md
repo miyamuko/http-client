@@ -1198,6 +1198,7 @@ __See Also:__
 
   * [http-date-to-universal-time](#http-date-to-universal-time)
 
+
 ### Function: <a name="http-date-to-universal-time"><em>http-date-to-universal-time</em></a> <i>`HTTP-DATE`</i>
 
 RFC 1123 で定義されている日付形式を universal-time に変換します。
