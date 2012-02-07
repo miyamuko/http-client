@@ -77,13 +77,26 @@ http-client.api> (find-uri "http://goo.gl/bgggL")
 
 ## DESCRIPTION
 
-http-client は [xl-winhttp](http://miyamuko.s56.xrea.com/xyzzy/xl-winhttp/intro.htm)
-を利用した HTTP クライアントライブラリです。
+http-client は [xl-winhttp] を利用した HTTP クライアント・ライブラリです。
+Proxy、Basic/Digest 認証、SSL、Cookie、非同期通信などをサポートしています。
 
-xl-winhttp は WinHTTP の API をそのまま提供するという方針であるため、
-利用するにはある程度の WinHTTP の知識を必要とし利用が難しいライブラリです。
+[xml-http-request] と比較したメリット・デメリットはそれぞれ以下のとおりです。
 
-http-client は xl-winhttp をラップし利用しやすい API を提供します。
+  * メリット
+    * ストリーミングに対応している (Transfer-Encoding: chunked)
+    * Content-Type の charset が不明な場合でも文字化けしない
+    * バイナリ・データの送受信に対応している
+    * ファイル・ダウンロードに対応している
+    * ファイル・アップロードに対応している (multipart/form-data)
+    * IE とセッションが分離されているので、IE のキャッシュやクッキーの影響を受けない
+
+  * デメリット
+    * IE とは別にプロキシを WinHTTP で設定しておく必要がある
+    * IE とセッションが分離されているので、自前でログイン処理などを実装する必要がある
+    * クッキーは xyzzy を再起動するとすべて消える
+
+  [xl-winhttp]: http://miyamuko.s56.xrea.com/xyzzy/xl-winhttp/intro.htm
+  [xml-http-request]: http://miyamuko.s56.xrea.com/xyzzy/xml-http-request/intro.htm
 
 
 ## INSTALL
