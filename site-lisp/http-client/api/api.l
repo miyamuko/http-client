@@ -110,11 +110,20 @@
                             receiver
                             wait
                             onprogress oncomplete onabort onerror)
-  (with-translate-condition
-   (apply 'http-request-impl method uri body args)))
+  (let ((client (make-http-client))
+        ok)
+    (with-translate-condition
+     (unwind-protect
+         (prog1
+             (apply 'http-request-impl client method uri body args)
+           (setf ok t))
+       (when (and (not ok)
+                  (http-client-request client))
+         (http-request-abort client))
+       ))))
 
 
-(defun http-request-impl (method uri body &rest args &key
+(defun http-request-impl (client method uri body &rest args &key
                                  headers query encoding
                                  auth proxy-auth
                                  (proxy *http-proxy*)
@@ -125,7 +134,6 @@
   (multiple-value-bind (content-type content-length body-stream)
       (parse-form-data body encoding)
     (let ((buf (make-buffer))
-          (client (make-http-client))
           request ondata
           (request-progress (make-http-progress :response-p nil :total content-length))
           (response-progress (make-http-progress :response-p t))
@@ -187,8 +195,8 @@
                  :error ,#'emit-error
                  )
                ))
+        (setf (http-client-request client) request)
         (set-proxy request uri proxy)
-        (setf client (make-http-client :request request))
         (winhttp:send-request request :total-length content-length)
         (when wait
           (http-response-wait client))

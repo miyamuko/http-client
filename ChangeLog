@@ -1,5 +1,8 @@
 2012-02-07  MIYAMUKO Katsuyuki
 
+	* (http-request-impl): リクエスト前にエラーが発生したら、HINTERNET
+	ハンドルをクローズするようにした
+
 	* (*http-proxy*): デフォルトのプロキシを設定できるようにした
 
 	* (*http-redirect-policy*): デフォルトのリダイレクト方法を設定できるようにした
