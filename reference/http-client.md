@@ -85,7 +85,7 @@
 ### Variable: <a name="*http-user-agent*"><em>\*http-user-agent\*</em></a>
 
 User-Agent ヘッダに渡される値のデフォルト値を指定するスペシャル変数です。
-デフォルトの値は `"xyzzy/(xyzzy のバージョン)"` です。
+デフォルトは `"xyzzy/(xyzzy のバージョン)"` です。
 
 各アプリケーションは適切な値を設定するようにしてください。
 
@@ -93,7 +93,7 @@ User-Agent ヘッダに渡される値のデフォルト値を指定するスペ
 ### Variable: <a name="*http-accept-type*"><em>\*http-accept-type\*</em></a>
 
 Accept ヘッダに渡される値のデフォルト値を指定するスペシャル変数です。
-デフォルトの値は `"*/*"` です。
+デフォルトは `"*/*"` です。
 
 
 ### Variable: <a name="*http-redirect-policy*"><em>\*http-redirect-policy\*</em></a>
@@ -364,7 +364,7 @@ HTTP DELETE リクエストを送信します。
       送信時のエンコーディングを指定します (binary のみをサポート)。
       指定が無ければ Content-Transfer-Encoding ヘッダは送信されません。
 
-    `:encoding` キーワード引数が与えられた場合、
+    `:encoding` キーワード引数を指定した場合、
     `name` と `value` はまずその文字エンコーディングに変換されたのちに url エスケープされます。
 
   * `:headers`
@@ -396,7 +396,7 @@ HTTP DELETE リクエストを送信します。
     (http-get "https://www.google.co.jp/search" :query '(("q" . "xyzzy 読み方")))
     ```
 
-    `:encoding` キーワード引数が与えられた場合、
+    `:encoding` キーワード引数を指定した場合、
     `name` と `value` はまずその文字エンコーディングに変換されたのちに url エスケープされます。
 
   * `:encoding`
