@@ -1,4 +1,4 @@
-; -*- mode: lisp; package: http-client.base.test.url; encoding: shift_jis -*-
+; -*- mode: lisp; package: http-client.test.base-url; encoding: shift_jis -*-
 
 ;; Copyright (c) 2012 MIYAMUKO Katsuyuki.
 ;;
@@ -28,16 +28,16 @@
 (require "http-client")
 (require "http-client/test/helper")
 
-(defpackage :http-client.base.test.url
+(defpackage :http-client.test.base-url
   (:use :lisp :editor
    :lisp-unit
    :http-client.base
    )
   )
 
-(in-package :http-client.base.test.url)
+(in-package :http-client.test.base-url)
 
-(remove-all-tests :http-client.base.test.url)
+(remove-all-tests :http-client.test.base-url)
 
 (define-test add-query-params
   (assert-equal "/search?q=xyzzy&num=50"

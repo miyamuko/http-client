@@ -1,4 +1,4 @@
-; -*- mode: lisp; package: http-client.test.api-http-get; encoding: shift_jis -*-
+; -*- mode: lisp; package: http-client.test.api-http-delete; encoding: shift_jis -*-
 
 ;; Copyright (c) 2012 MIYAMUKO Katsuyuki.
 ;;
@@ -33,7 +33,7 @@
 (require "http-client")
 (require "http-client/test/helper")
 
-(defpackage :http-client.test.api-http-get
+(defpackage :http-client.test.api-http-delete
   (:use :lisp :editor
    :lisp-unit
    :json
@@ -42,19 +42,19 @@
    )
   )
 
-(in-package :http-client.test.api-http-get)
+(in-package :http-client.test.api-http-delete)
 
-(remove-all-tests :http-client.test.api-http-get)
+(remove-all-tests :http-client.test.api-http-delete)
 
-(define-test http-get
+(define-test http-delete
   (multiple-value-bind (body status headers uri)
       (http-response-values
-       (http-get "http://localhost:3000/snoop"))
+       (http-delete "http://localhost:3000/snoop"))
     (assert-equal 200 status)
     (assert-equal "application/json; charset=utf-8"
         ($ headers "content-type"))
     (let ((json (json-decode body)))
-      (assert-equal "GET" ($ json "method"))
+      (assert-equal "DELETE" ($ json "method"))
       (assert-equal nil ($ json "query"))
       (assert-equal nil ($ json "body"))
       (assert-equal (format nil "xyzzy/~A" (software-version))
@@ -63,14 +63,14 @@
     )
   )
 
-(define-test http-get/headers
+(define-test http-delete/headers
   (multiple-value-bind (body status headers uri)
       (http-response-values
-       (http-get "http://localhost:3000/snoop"
-                 :headers `(:X-Yzzy-Version ,(software-version)
-                            :X-Hoge 1
-                            :X-Hoge 2
-                            :X-Hoge 3)))
+       (http-delete "http://localhost:3000/snoop"
+                    :headers `(:X-Yzzy-Version ,(software-version)
+                               :X-Hoge 1
+                               :X-Hoge 2
+                               :X-Hoge 3)))
     (let ((json (json-decode body)))
       (assert-equal (software-version) ($ json "headers" "X-Yzzy-Version"))
       ;; Express ‚ª‚Ü‚Æ‚ß‚Ä‚é?
@@ -79,12 +79,12 @@
     )
   )
 
-(define-test http-get/query
+(define-test http-delete/query
   (multiple-value-bind (body status headers uri)
       (http-response-values
-       (http-get "http://localhost:3000/snoop"
-                 :query '((q "xyzzy “Ç‚Ý•û") (num 50))
-                 :encoding *encoding-sjis*))
+       (http-delete "http://localhost:3000/snoop"
+                    :query '((q "xyzzy “Ç‚Ý•û") (num 50))
+                    :encoding *encoding-sjis*))
     (let ((json (json-decode body)))
       (assert-equal "xyzzy%20%93%C7%82%DD%95%FB" ($ json "query" "q"))
       (assert-equal "50" ($ json "query" "num"))
@@ -92,81 +92,81 @@
     )
   )
 
-(define-test http-get/progress
+(define-test http-delete/progress
   (let (request-progress-list
         response-progress-list)
     (multiple-value-bind (body status headers uri)
         (http-response-values
-         (http-get "http://localhost:3000/snoop"
-                    :onprogress #'(lambda (p)
-                                    (if (http-progress-response-p p)
-                                        (push p response-progress-list)
-                                      (push p request-progress-list)))))
+         (http-delete "http://localhost:3000/snoop"
+                      :onprogress #'(lambda (p)
+                                      (if (http-progress-response-p p)
+                                          (push p response-progress-list)
+                                        (push p request-progress-list)))))
       (assert-true (null request-progress-list))
       (assert-true (every 'http-progress-p response-progress-list))
       (assert-equal 100 (http-progress-percent (car response-progress-list)))
       ))
   )
 
-(define-test http-get/no-redirect
+(define-test http-delete/no-redirect
   (multiple-value-bind (body status headers uri)
       (http-response-values
-       (http-get "http://localhost:3000/redirect?url=http://localhost:3000/snoop&status=301"))
+       (http-delete "http://localhost:3000/redirect?url=http://localhost:3000/snoop&status=301"))
     (assert-equal 200 status)
-    (assert-equal "GET" ($ (json-decode body) "method")))
+    (assert-equal "DELETE" ($ (json-decode body) "method")))
   (multiple-value-bind (body status headers uri)
       (http-response-values
-       (http-get "http://localhost:3000/redirect?url=http://localhost:3000/snoop&status=302"))
+       (http-delete "http://localhost:3000/redirect?url=http://localhost:3000/snoop&status=302"))
     (assert-equal 200 status)
-    (assert-equal "GET" ($ (json-decode body) "method")))
+    (assert-equal "DELETE" ($ (json-decode body) "method")))
   (multiple-value-bind (body status headers uri)
       (http-response-values
-       (http-get "http://localhost:3000/redirect?url=http://localhost:3000/snoop&status=301"
-                 :no-redirect t))
+       (http-delete "http://localhost:3000/redirect?url=http://localhost:3000/snoop&status=301"
+                    :no-redirect t))
     (assert-equal 301 status)
     (assert-equal "http://localhost:3000/snoop"
         ($ headers "Location")))
   (multiple-value-bind (body status headers uri)
       (http-response-values
-       (http-get "http://localhost:3000/redirect?url=http://localhost:3000/snoop&status=302"
-                 :no-redirect t))
+       (http-delete "http://localhost:3000/redirect?url=http://localhost:3000/snoop&status=302"
+                    :no-redirect t))
     (assert-equal 302 status)
     (assert-equal "http://localhost:3000/snoop"
         ($ headers "Location")))
   )
 
-(define-test http-get/no-redirect-callback
+(define-test http-delete/no-redirect-callback
   (let (body status headers uri)
     (http-response-wait
-     (http-get "http://localhost:3000/redirect?url=http://localhost:3000/snoop&status=302"
-               :no-redirect t
-               :oncomplete #'(lambda (&rest args)
-                               (setf (values body status headers uri)
-                                     (values-list args)))))
+     (http-delete "http://localhost:3000/redirect?url=http://localhost:3000/snoop&status=302"
+                  :no-redirect t
+                  :oncomplete #'(lambda (&rest args)
+                                  (setf (values body status headers uri)
+                                        (values-list args)))))
     (assert-equal 302 status)
     (assert-equal "http://localhost:3000/snoop"
         ($ headers "Location")))
   )
 
-(define-test http-get/oncomplete
+(define-test http-delete/oncomplete
   (let (oncomplete-called-p
         onerror-called-p
         body status headers uri
         error)
     (http-response-wait
-     (http-get "http://localhost:3000/snoop"
-               :oncomplete #'(lambda (&rest args)
-                               (setf oncomplete-called-p t)
-                               (setf (values body status headers uri)
-                                     (values-list args)))
-               :onerror #'(lambda (err)
-                            (setf onerror-called-p t
-                                  error err))))
+     (http-delete "http://localhost:3000/snoop"
+                  :oncomplete #'(lambda (&rest args)
+                                  (setf oncomplete-called-p t)
+                                  (setf (values body status headers uri)
+                                        (values-list args)))
+                  :onerror #'(lambda (err)
+                               (setf onerror-called-p t
+                                     error err))))
     (assert-equal nil onerror-called-p)
     (assert-equal nil error)
     (assert-equal t oncomplete-called-p)
     (let ((json (json-decode body)))
-      (assert-equal "GET" ($ json "method")))
+      (assert-equal "DELETE" ($ json "method")))
     (assert-equal 200 status)
     (assert-equal "application/json; charset=utf-8"
         ($ headers "content-type"))
@@ -175,20 +175,20 @@
     )
   )
 
-(define-test http-get/async-onerror
+(define-test http-delete/async-onerror
   (let (oncomplete-called-p
         onerror-called-p
         body status headers uri
         error)
     (http-response-wait
-     (http-get "http://localhost:3000/disconnect"
-               :oncomplete #'(lambda (&rest args)
-                               (setf oncomplete-called-p t)
-                               (setf (values body status headers uri)
-                                     (values-list args)))
-               :onerror #'(lambda (err)
-                            (setf onerror-called-p t
-                                  error err)))
+     (http-delete "http://localhost:3000/disconnect"
+                  :oncomplete #'(lambda (&rest args)
+                                  (setf oncomplete-called-p t)
+                                  (setf (values body status headers uri)
+                                        (values-list args)))
+                  :onerror #'(lambda (err)
+                               (setf onerror-called-p t
+                                     error err)))
      :signal-error nil)
     (assert-equal t onerror-called-p)
     (assert-type http-request-error error)
@@ -198,16 +198,16 @@
     )
   )
 
-(define-test http-get/async-handler-error
+(define-test http-delete/async-handler-error
   (let (onerror-called-p
         error)
     (http-response-wait
-     (http-get "http://localhost:3000/snoop"
-               :oncomplete #'(lambda (&rest args)
-                               (plain-error "hoge"))
-               :onerror #'(lambda (err)
-                            (setf onerror-called-p t
-                                  error err)))
+     (http-delete "http://localhost:3000/snoop"
+                  :oncomplete #'(lambda (&rest args)
+                                  (plain-error "hoge"))
+                  :onerror #'(lambda (err)
+                               (setf onerror-called-p t
+                                     error err)))
      :signal-error nil)
     (assert-equal t onerror-called-p)
     (assert-type plain-error error)

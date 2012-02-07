@@ -42,7 +42,7 @@
 
 (remove-all-tests :http-client.test.api-http-get)
 
-(define-test http-client/api-http-user-agent/get
+(define-test http-user-agent/get
   (multiple-value-bind (body status headers uri)
       (let ((*http-user-agent* "hoge"))
         (http-response-values
@@ -54,7 +54,7 @@
     )
   )
 
-(define-test http-client/api-http-user-agent/post
+(define-test http-user-agent/post
   (multiple-value-bind (body status headers uri)
       (http-response-values
        (http-post "http://localhost:3000/snoop" nil

@@ -1,4 +1,4 @@
-; -*- mode: lisp; package: http-client.test.api; encoding: shift_jis -*-
+; -*- mode: lisp; package: http-client.test.api-utils; encoding: shift_jis -*-
 
 ;; Copyright (c) 2012 MIYAMUKO Katsuyuki.
 ;;
@@ -28,7 +28,7 @@
 (require "http-client")
 (require "http-client/test/helper")
 
-(defpackage :http-client.test.api
+(defpackage :http-client.test.api-utils
   (:use :lisp :editor
    :lisp-unit
    :http-client
@@ -36,11 +36,11 @@
    )
   )
 
-(in-package :http-client.test.api)
+(in-package :http-client.test.api-utils)
 
-(remove-all-tests :http-client.test.api)
+(remove-all-tests :http-client.test.api-utils)
 
-(define-test http-client/api/http-compose-query
+(define-test http-compose-query
   (assert-equal "/search?q=xyzzy%20%93%C7%82%DD%95%FB&num=30"
       (http-compose-query "/search"
                           '((q "xyzzy “Ç‚Ý•û") (num 30))))
@@ -56,7 +56,7 @@
                           "q=xyzzy%20%93%C7%82%DD%95%FB&num=30"))
   )
 
-(define-test http-client/api/http-compose-form-data
+(define-test http-compose-form-data
   (multiple-value-bind (form-data boundary)
       (http-compose-form-data '(("name" "value")) nil)
     (assert-equal (format nil "~{~A\r\n~}"
