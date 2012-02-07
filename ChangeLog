@@ -1,5 +1,8 @@
 2012-02-07  MIYAMUKO Katsuyuki
 
+	* (http-request-header, http-response-header): ヘッダ名に文字列とシンボルを
+	指定できるようにした
+
 	* (http-argument-error): ERROR_INVALID_PARAMETER や ERROR_WINHTTP_INVALID_URL など
 
 2012-02-03  MIYAMUKO Katsuyuki

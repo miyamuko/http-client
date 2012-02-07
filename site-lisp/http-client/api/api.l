@@ -242,7 +242,8 @@
   (http-client-uri client))
 
 (defun http-request-header (client header)
-  (cdr (assoc header (http-request-header-alist client) :test #'equalp)))
+  (check-type header string-designator)
+  (cdr (assoc header (http-request-header-alist client) :test #'string-equal)))
 
 (defun http-request-header-alist (client)
   (http-response-wait client :ready-state :loaded)
@@ -260,7 +261,8 @@
   (http-client-status-text client))
 
 (defun http-response-header (client header)
-  (cdr (assoc header (http-response-header-alist client) :test #'equalp)))
+  (check-type header string-designator)
+  (cdr (assoc header (http-response-header-alist client) :test #'string-equal)))
 
 (defun http-response-header-alist (client)
   (http-response-wait client :ready-state :loaded)

@@ -985,10 +985,15 @@ http-client.api> (let ((r (http-get "http://goo.gl/bgggL")))
 ### Function: <a name="http-request-header"><em>http-request-header</em></a> <i>`CLIENT` `HEADER`</i>
 
 指定したリクエスト・ヘッダを取得します。
+ヘッダ名は文字列またはシンボルで指定します (case-sensitive)。
 
 ```lisp
 http-client.api> (let ((r (http-get "http://www.google.co.jp/")))
                    (http-request-header r "User-Agent"))
+"xyzzy/0.2.2.235"
+
+http-client.api> (let ((r (http-get "http://www.google.co.jp/")))
+                   (http-request-header r :user-agent))
 "xyzzy/0.2.2.235"
 ```
 
@@ -1026,11 +1031,16 @@ http-client.api> (let ((r (http-delete "http://www.google.co.jp/")))
 ### Function: <a name="http-response-header"><em>http-response-header</em></a> <i>`CLIENT` `HEADER`</i>
 
 指定したレスポンス・ヘッダを取得します。
+ヘッダ名は文字列またはシンボルで指定します (case-sensitive)。
 
 ```lisp
-http-client.api> (let ((r (http-get "http://www.google.co.jp/")))
-                   (http-response-header r "Date"))
-"Wed, 01 Feb 2012 12:39:32 GMT"
+http-client.api> (let ((r (http-get "http://www.jsdlab.co.jp/~kamei/")))
+                   (http-response-header r "Last-Modified"))
+"Wed, 07 Dec 2005 14:45:00 GMT"
+
+http-client.api> (let ((r (http-get "http://www.jsdlab.co.jp/~kamei/")))
+                   (http-response-header r :last-modified))
+"Wed, 07 Dec 2005 14:45:00 GMT"
 ```
 
 
