@@ -1,5 +1,7 @@
 2012-02-07  MIYAMUKO Katsuyuki
 
+	* (http-response-wait): quit した場合に abort するようにした
+
 	* (http-request-impl): リクエスト前にエラーが発生したら、HINTERNET
 	ハンドルをクローズするようにした
 

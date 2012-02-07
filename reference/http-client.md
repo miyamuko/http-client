@@ -976,7 +976,8 @@ __See Also:__
   * [http-request-waiting-p](#http-request-waiting-p)
 
 
-### Function: <a name="http-response-wait"><em>http-response-wait</em></a> <i>`CLIENT` &key `:nowait` `:no-redraw` `:sleep` (`:timeout` 30) (`:interval` 0.1) (`:ready-state` :complete) (`:signal-error` t)</i>
+### Function: <a name="http-response-wait"><em>http-response-wait</em></a> <i>`CLIENT` &key `:nowait` `:no-redraw` `:sleep` (`:timeout` 30) (`:interval` 0.1) (`:ready-state` :complete) (`:abort-on-quit` t) (`:signal-error` t)</i>
+
 
 `CLIENT` で指定したリクエストが完了するのを待ちます。
 リクエストが完了した場合は t を返します。
@@ -1018,6 +1019,11 @@ __See Also:__
     * :complete を指定するとレスポンス・ボディの受信完了を待ち合わせます。
 
     デフォルトは :complete です。
+
+  * `:abort-on-quit` に `non-nil` を指定すると、待ち合わせ中に Ctrl-g で停止した場合に
+    リクエストを abort します。
+
+    デフォルトは t です。
 
   * `:signal-error` に `non-nil` を指定すると、非同期処理で発生したエラーを再送します。
 

@@ -216,21 +216,28 @@
 
 (defun http-response-wait (client &key nowait no-redraw sleep (timeout 30) (interval 0.1)
                                   (ready-state :complete)
+                                  (abort-on-quit t)
                                   (signal-error t))
-  (let ((start (get-internal-real-time)))
-    (while (and (http-client-waiting-p client ready-state)
-                (not nowait)
-                (or (not timeout)
-                    (< (/ (- (get-internal-real-time) start) 1000.0)
-                       timeout)))
-      (if sleep
-          (sleep-for interval)
-        (sit-for interval no-redraw)))
-    (unless (http-client-waiting-p client ready-state)
-      (when signal-error
-        (when-let (err (http-client-error client))
-          (error err))))
-    (http-request-completed-p client)
+  (handler-case
+      (progn
+        (let ((start (get-internal-real-time)))
+          (while (and (http-client-waiting-p client ready-state)
+                      (not nowait)
+                      (or (not timeout)
+                          (< (/ (- (get-internal-real-time) start) 1000.0)
+                             timeout)))
+            (if sleep
+                (sleep-for interval)
+              (sit-for interval no-redraw))))
+        (unless (http-client-waiting-p client ready-state)
+          (when signal-error
+            (when-let (err (http-client-error client))
+              (error err))))
+        (http-request-completed-p client))
+    (quit (c)
+      (when abort-on-quit
+        (http-request-abort client))
+      (error c))
     ))
 
 
