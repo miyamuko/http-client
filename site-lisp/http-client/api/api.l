@@ -35,6 +35,7 @@
 
 (export '(*http-user-agent*
           *http-accept-type*
+          *http-proxy*
           *http-redirect-policy*
           ;; request functions
           http-get
@@ -71,6 +72,7 @@
 
 (defvar *http-user-agent* (format nil "xyzzy/~A" (software-version)))
 (defvar *http-accept-type* "*/*")
+(defvar *http-proxy* :winhttp)
 (defvar *http-redirect-policy* :disallow-https-to-http)
 
 ;;; request functions
@@ -115,7 +117,7 @@
 (defun http-request-impl (method uri body &rest args &key
                                  headers query encoding
                                  auth proxy-auth
-                                 (proxy nil proxy-supplied-p)
+                                 (proxy *http-proxy*)
                                  no-redirect
                                  (receiver (http-string-receiver))
                                  wait
@@ -185,7 +187,7 @@
                  :error ,#'emit-error
                  )
                ))
-        (set-proxy request uri proxy proxy-supplied-p)
+        (set-proxy request uri proxy)
         (setf client (make-http-client :request request))
         (winhttp:send-request request :total-length content-length)
         (when wait

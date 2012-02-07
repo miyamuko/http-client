@@ -5,6 +5,7 @@
   * [VARIABLES](#variables)
     * [\*http-user-agent\*](#*http-user-agent*)
     * [\*http-accept-type\*](#*http-accept-type*)
+    * [\*http-proxy\*](#*http-proxy*)
     * [\*http-redirect-policy\*](#*http-redirect-policy*)
   * [CONDITIONS](#conditions)
     * [http-error](#http-error)
@@ -95,6 +96,62 @@ User-Agent ヘッダに渡される値のデフォルト値を指定するスペ
 Accept ヘッダに渡される値のデフォルト値を指定するスペシャル変数です。
 デフォルトは `"*/*"` です。
 
+
+### Variable: <a name="*http-proxy*"><em>\*http-proxy\*</em></a>
+
+デフォルトのプロキシを指定するスペシャル変数です。
+以下の値を設定可能です。
+
+  * `nil` または `:no`
+
+    プロキシサーバを利用しません。
+
+  * `:winhttp`
+
+    WinHTTP のデフォルト設定を利用します。
+
+    WinHTTP のプロキシ設定は `netsh` (Vista/2008 以降) または
+    `proxycfg` (XP/2003 以前) コマンドを用いて行います。
+
+  * `:ie`
+
+    IE のプロキシ設定を利用します。
+    この場合、プロキシの解決には WPAD (Web Proxy Auto-Discovery)
+     による自動検出および自動構成スクリプトが利用可能になりますが、
+    Ctrl-g が効かない同期処理になるので注意してください。
+
+  * 文字列
+
+    指定されたプロキシサーバを利用します。
+
+  * リスト
+
+    指定されたプロキシサーバとバイパスリストを利用します。
+
+デフォルトは `:winhttp` です。
+
+```lisp
+;; プロキシ名を指定
+(setf *http-proxy* "my.proxy.com")
+(setf *http-proxy* :proxy "my.proxy.com:8080")
+
+;; プロキシ名とバイパスを指定
+(setf *http-proxy*  '("my.proxy.com:8080" "192.168.*.*"))
+
+;; IE のプロキシ設定を利用する
+(setf *http-proxy* :ie)
+
+;; WinHTTP のプロキシ設定を利用する
+(setf *http-proxy* :winhttp)
+
+;; proxy を利用しない
+(setf *http-proxy* :no)
+(setf *http-proxy* nil)
+```
+
+__See Also:__
+
+  * [http-request](#http-request)
 
 ### Variable: <a name="*http-redirect-policy*"><em>\*http-redirect-policy\*</em></a>
 
@@ -431,27 +488,49 @@ HTTP DELETE リクエストを送信します。
 
     http プロキシサーバを文字列、リスト、キーワードで指定します。
 
-    `nil` を指定した場合はプロキシサーバを利用しません。
-    何も指定しなかった場合は、WinHTTP のデフォルト設定のプロキシが利用されます。
+    以下の値を設定可能です。
 
-    `:ie` を指定すると IE のプロキシ設定を利用します。
-    この場合、プロキシの解決には WPAD (Web Proxy Auto-Discovery) による自動検出
-    および自動構成スクリプトが利用可能になりますが、
-    Ctrl-g が効かない同期処理になるので注意してください。
+    * `nil` または `:no`
 
-     ```lisp
+      プロキシサーバを利用しません。
+
+    * `:winhttp`
+
+      WinHTTP のデフォルト設定を利用します。
+
+      WinHTTP のプロキシ設定は `netsh` (Vista/2008 以降) または
+      `proxycfg` (XP/2003 以前) コマンドを用いて行います。
+
+    * `:ie`
+
+      IE のプロキシ設定を利用します。
+      この場合、プロキシの解決には WPAD (Web Proxy Auto-Discovery)
+       による自動検出および自動構成スクリプトが利用可能になりますが、
+      Ctrl-g が効かない同期処理になるので注意してください。
+
+    * 文字列
+
+      指定されたプロキシサーバを利用します。
+
+    * リスト
+
+      指定されたプロキシサーバとバイパスリストを利用します。
+
+    何も指定しなかった場合は、[\*http-proxy\*](#*http-proxy*) の設定に従います。
+
+    ```lisp
     ;; プロキシ名を指定
     :proxy "my.proxy.com"
     :proxy "my.proxy.com:8080"
 
     ;; プロキシ名とバイパスを指定
-    :proxy '(:proxy-name "my.proxy.com:8080" :proxy-bypass "192.168.*.*" :access-type :named-proxy)
+    :proxy '("my.proxy.com:8080" "192.168.*.*")
 
     ;; IE のプロキシ設定を利用する
     :proxy :ie
 
     ;; WinHTTP のプロキシ設定を利用する
-    :proxy :default
+    :proxy :winhttp
 
     ;; proxy を利用しない
     :proxy :no
@@ -540,6 +619,7 @@ __See Also:__
 
   * [\*http-user-agent\*](#*http-user-agent*)
   * [\*http-accept-type\*](#*http-accept-type*)
+  * [\*http-proxy\*](#*http-proxy*)
   * [\*http-redirect-policy\*](#*http-redirect-policy*)
   * [http-request-uri](#http-request-uri)
   * [http-request-header](#http-request-header)

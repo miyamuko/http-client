@@ -29,32 +29,34 @@
 
 (in-package :http-client.api)
 
-(defun set-proxy (request uri proxy proxy-supplied-p)
+(defun set-proxy (request uri proxy)
   (multiple-value-bind (proxy-name proxy-bypass access-type)
-      (get-proxy-option request uri proxy proxy-supplied-p)
-  (winhttp:set-option request :proxy
-                      :access-type access-type
-                      :proxy-name proxy-name
-                      :proxy-bypass proxy-bypass)))
+      (get-proxy-option request uri proxy)
+    (winhttp:set-option request :proxy
+                        :proxy-name proxy-name
+                        :proxy-bypass proxy-bypass
+                        :access-type access-type
+                        )))
 
-(defun get-proxy-option (request uri proxy proxy-supplied-p)
-  (cond (proxy-supplied-p
-         (etypecase proxy
-           (null (values nil nil :no-proxy))
-           (string (values proxy nil :named-proxy))
-           (list (values-list proxy))
-           (keyword
-            (ecase proxy
-              (:no (values nil nil :no-proxy))
-              (:default (values nil nil :default-proxy))
-              (:ie
-               (get-proxy-by-ie-config (winhttp:connection-parent
-                                        (winhttp:request-parent request))
-                                       uri))))
-           ))
-        (t
-         (values nil nil :default-proxy))
-        ))
+(defun get-proxy-option (request uri proxy)
+  (etypecase proxy
+    (null (values nil nil :no-proxy))
+    (string (values proxy nil :named-proxy))
+    (list
+     (destructuring-bind (proxy-name &optional proxy-bypass)
+         proxy
+       (check-type proxy-name string)
+       (check-type proxy-bypass (or null string))
+       (values proxy-name proxy-bypass :named-proxy)))
+    (keyword
+     (ecase proxy
+       (:winhttp (values nil nil :default-proxy))
+       (:no (values nil nil :no-proxy))
+       (:ie
+        (get-proxy-by-ie-config (winhttp:connection-parent
+                                 (winhttp:request-parent request))
+                                uri))))
+    ))
 
 
 (defun detect-encoding (encoding headers)
