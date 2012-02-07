@@ -413,10 +413,34 @@ HTTP DELETE リクエストを送信します。
 
   * `:proxy`
 
-    http プロキシサーバを hostname または hostname:port 形式の文字列で指定します。
-    `nil` を指定した場合はプロキシサーバを利用しません。
+    http プロキシサーバを文字列、リスト、キーワードで指定します。
 
-    指定しなかった場合は、IE または WinHTTP のデフォルト設定のプロキシが利用されます。
+    `nil` を指定した場合はプロキシサーバを利用しません。
+    何も指定しなかった場合は、WinHTTP のデフォルト設定のプロキシが利用されます。
+
+   `:ie` を指定すると IE のプロキシ設定を利用します。
+   この場合、プロキシの解決には WPAD (Web Proxy Auto-Discovery) による自動検出
+   および自動構成スクリプトが利用可能になりますが、
+   Ctrl-g が効かない同期処理になるので注意してください。
+
+    ```lisp
+   ;; プロキシ名を指定
+   :proxy "my.proxy.com"
+   :proxy "my.proxy.com:8080"
+
+   ;; プロキシ名とバイパスを指定
+   :proxy '(:proxy-name "my.proxy.com:8080" :proxy-bypass "192.168.*.*" :access-type :named-proxy)
+
+   ;; IE のプロキシ設定を利用する
+   :proxy :ie
+
+   ;; WinHTTP のプロキシ設定を利用する
+   :proxy :default
+
+   ;; proxy を利用しない
+   :proxy :no
+   :proxy nil
+    ```
 
   * `:no-redirect`
 

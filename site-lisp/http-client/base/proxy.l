@@ -40,10 +40,16 @@
                                       :auto-config-url proxy-pac
                                       :config-url t
                                       ))
+          (auto-detect-p
+           (winhttp:get-proxy-for-url session url
+                                      :dhcp t :dns_a t
+                                      :auto-detect t
+                                      ))
           (proxy-name
            (values proxy-name proxy-bypass :named-proxy))
           (t
-           (values nil nil :default-proxy)))))
+           (values nil nil :no-proxy))
+          )))
 
 
 (provide "http-client/base/proxy")

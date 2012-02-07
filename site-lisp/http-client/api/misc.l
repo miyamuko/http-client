@@ -42,11 +42,18 @@
          (etypecase proxy
            (null (values nil nil :no-proxy))
            (string (values proxy nil :named-proxy))
-           (list (values-list proxy))))
+           (list (values-list proxy))
+           (keyword
+            (ecase proxy
+              (:no (values nil nil :no-proxy))
+              (:default (values nil nil :default-proxy))
+              (:ie
+               (get-proxy-by-ie-config (winhttp:connection-parent
+                                        (winhttp:request-parent request))
+                                       uri))))
+           ))
         (t
-         (get-proxy-by-ie-config (winhttp:connection-parent
-                                  (winhttp:request-parent request))
-                                 uri))
+         (values nil nil :default-proxy))
         ))
 
 
