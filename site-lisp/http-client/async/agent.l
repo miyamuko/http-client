@@ -36,9 +36,11 @@
 (defvar *session* (make-hash-table :test #'equalp))
 
 (defun get-session-create (&rest args)
-  (or (gethash args *session*)
-      (setf (gethash args *session*)
-            (apply 'winhttp:open args))))
+  (when-let* ((s (gethash args *session*))
+                  (_ (winhttp:session-p s)))
+    (return-from get-session-create s))
+  (setf (gethash args *session*)
+        (apply 'winhttp:open args)))
 
 (defun get-connection-create (&rest args)
   ;; TODO connection pool
