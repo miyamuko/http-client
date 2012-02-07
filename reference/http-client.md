@@ -55,6 +55,8 @@
     * utilities
       * [http-compose-query](#http-compose-query)
       * [http-compose-form-data](#http-compose-form-data)
+      * [http-date-from-universal-time](#http-date-from-universal-time)
+      * [http-date-to-universal-time](#http-date-to-universal-time)
       * [http-client-version](#http-client-version)
 
 
@@ -1157,6 +1159,51 @@ http-client.api> (http-compose-form-data
 __See Also:__
 
   * [http-compose-query](#http-compose-query)
+
+
+### Function: <a name="http-date-from-universal-time"><em>http-date-from-universal-time</em></a> <i>`UNIVERSAL-TIME`</i>
+
+universal-time を RFC 1123 で定義されている日付形式に変換します。
+
+```lisp
+http-client.api> (http-date-from-universal-time (encode-universal-time 1 2 3 4 5 2012 0))
+"Fri, 04 May 2012 03:02:01 GMT"
+```
+
+__See Also:__
+
+  * [http-date-to-universal-time](#http-date-to-universal-time)
+
+### Function: <a name="http-date-to-universal-time"><em>http-date-to-universal-time</em></a> <i>`HTTP-DATE`</i>
+
+RFC 1123 で定義されている日付形式を universal-time に変換します。
+
+```lisp
+http-client.api> (http-date-to-universal-time "Fri, 04 May 2012 03:02:01 GMT")
+3545089321
+
+http-client.api> (decode-universal-time 3545089321 0)
+1 ;
+2 ;
+3 ;
+4 ;
+5 ;
+2012 ;
+4 ;
+nil ;
+0
+
+http-client.api> (let* ((client (http-head "http://www.jsdlab.co.jp/~kamei/"))
+                        (last-mod (http-response-header client :last-modified)))
+                   (values last-mod
+                           (http-date-to-universal-time last-mod)))
+"Wed, 07 Dec 2005 14:45:00 GMT"
+3342955500
+```
+
+__See Also:__
+
+  * [http-date-from-universal-time](#http-date-from-universal-time)
 
 
 ### Function: <a name="http-client-version"><em>http-client-version</em></a>

@@ -1,5 +1,7 @@
 2012-02-07  MIYAMUKO Katsuyuki
 
+	* (http-date-from-universal-time, http-date-to-universal-time): 追加
+
 	* (http-request-header, http-response-header): ヘッダ名に文字列とシンボルを
 	指定できるようにした
 

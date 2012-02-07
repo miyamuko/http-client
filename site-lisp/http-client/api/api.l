@@ -63,6 +63,8 @@
           ;; utilities
           http-compose-query
           http-compose-form-data
+          http-date-from-universal-time
+          http-date-to-universal-time
           ))
 
 
@@ -300,6 +302,14 @@
                    (with-output-to-string (s)
                      (copy-stream input-stream s))))
             boundary)))
+
+(defun http-date-from-universal-time (universal-time)
+  (with-translate-condition
+   (winhttp:time-from-universal-time universal-time)))
+
+(defun http-date-to-universal-time (http-date)
+  (with-translate-condition
+   (winhttp:time-to-universal-time http-date)))
 
 
 (provide "http-client/api/api")
