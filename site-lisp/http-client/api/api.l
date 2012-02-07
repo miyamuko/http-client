@@ -186,7 +186,7 @@
                ))
         (set-proxy request uri proxy proxy-supplied-p)
         (setf client (make-http-client :request request))
-        (winhttp:send-request request :data (read-into buf body-stream nil nil))
+        (winhttp:send-request request :total-length content-length)
         (when wait
           (http-response-wait client))
         client

@@ -55,7 +55,7 @@
         (t
          (let ((urlencoded (url-encode-params body encoding)))
            (values (content-type-header-value :urlencoded t)
-                   nil
+                   (length urlencoded) ; encode çœÇ›Ç»ÇÃÇ≈ length Ç≈ëÂè‰ïv
                    (make-form-data-input-stream urlencoded)))
          )))
 
