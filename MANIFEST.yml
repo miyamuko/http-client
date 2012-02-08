@@ -22,3 +22,4 @@ files:
     - reference/*.*
     - site-lisp/**/*.l
     - site-lisp/**/*.lc
+    - site-lisp/**/test/*.*
