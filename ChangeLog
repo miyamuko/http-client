@@ -1,5 +1,9 @@
 2012-02-08  MIYAMUKO Katsuyuki
 
+	* (http-request, http-response-wait, dispatch-event):
+	- abort しても onabort が呼ばれていなかったのを修正
+	- onabort の引数をなくした
+
 	* (multipart/form-data-p, build-multipart/form-data-value):
 	- body を plist で指定可能とした
 	- パラメータの値に文字列以外を指定可能とした

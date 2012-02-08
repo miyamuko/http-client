@@ -144,10 +144,14 @@
                (emit-error (err)
                  (setf err (translate-condition err))
                  (set-on-error client err)
-                 (when err
-                   (let ((handler (if (typep err 'http-abort-error)
-                                      onabort onerror)))
-                     (emit handler err))))
+                 (typecase err
+                   (null
+                    (when (http-request-aborted-p client)
+                      (emit onabort)))
+                   (http-abort-error
+                    (emit onabort))
+                   (t
+                    (emit onerror err))))
                (emit-progress (progress n)
                  (when n
                    (incf (http-progress-current progress) n)
@@ -233,7 +237,7 @@
           (when signal-error
             (when-let (err (http-client-error client))
               (error err))))
-        (http-request-completed-p client))
+        (not (http-client-waiting-p client ready-state)))
     (quit (c)
       (when abort-on-quit
         (http-request-abort client))
@@ -251,8 +255,7 @@
   (http-client-waiting-p client :complete))
 
 (defun http-request-completed-p (client)
-  (or (not (http-request-waiting-p client))
-      (http-request-aborted-p client)))
+  (not (http-request-waiting-p client)))
 
 
 ;;; request accessors

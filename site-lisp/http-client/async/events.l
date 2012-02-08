@@ -42,9 +42,11 @@
   (let ((ctx (winhttp:request-context req)))
     (setf (context-last-event ctx) event)
     ;(msgbox "~S ~S~%~%~S" event args req)
-    (if (winhttp:request-closed-p req)
-        (emit-close req nil)
-      (request-callback1 event req args))))
+    (cond ((winhttp:request-closed-p req)
+           (when (eql event :handle-closing)
+             (emit-close req nil)))
+          (t
+           (request-callback1 event req args)))))
 
 (defun request-callback1 (event req args)
   (destructuring-case `(,event ,req ,@args)
@@ -75,8 +77,6 @@
     ((:request-error req type error)
      (winhttp:close-handle req)
      (emit-error req error))
-    ((:handle-closing hinternet)
-     (emit-close req nil))
     ;; コールバック内でエラー
     ((:callback-error req error)
      (winhttp:close-handle req)
