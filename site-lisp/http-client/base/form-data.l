@@ -65,10 +65,12 @@
   ;;   '(("submit" :value "OK"))
   ;; application/x-www-form-encoded
   ;;   '(("submit" "OK"))
+  ;;   '(:submit "OK")
   ;;   "submit=OK"
   (and (listp body)
        (some #'(lambda (param)
-                 (< 2 (length param)))
+                 (and (listp param)
+                      (< 2 (length param))))
              body)))
 
 ;; '((:data "..." :size 3)
@@ -120,7 +122,11 @@
                                           content-type
                                           content-transfer-encoding
                                           header-plist)))
-    (add-data "~A~A" headers (encode value encoding))))
+    (let ((value (typecase value
+                   (string value)
+                   (null "")
+                   (t (format nil "~A" value)))))
+      (add-data "~A~A" headers (encode value encoding)))))
 
 (defun add-data (fmt &rest args)
   (let ((data (if args

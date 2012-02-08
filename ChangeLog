@@ -1,3 +1,9 @@
+2012-02-08  MIYAMUKO Katsuyuki
+
+	* (multipart/form-data-p, build-multipart/form-data-value):
+	- body を plist で指定可能とした
+	- パラメータの値に文字列以外を指定可能とした
+
 2012-02-07  MIYAMUKO Katsuyuki
 
 	* (http-response-wait): quit した場合に abort するようにした

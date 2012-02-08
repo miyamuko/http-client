@@ -64,7 +64,7 @@
            keys)))
 
 (defun encode (v encoding &optional output-stream)
-  (typecase v
+  (etypecase v
     (null "")
     (string
      (if encoding
@@ -72,7 +72,7 @@
        v))))
 
 (defun decode (v encoding &optional output-stream)
-  (typecase v
+  (etypecase v
     (null "")
     (string
      (if encoding
