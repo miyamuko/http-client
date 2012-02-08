@@ -129,11 +129,11 @@
 
 (defun set-on-error (client err)
   (setf (http-client-ready-state client)
-        :complete
-
-        (http-client-error client)
-        err
-        ))
+        :complete)
+  (when err
+    (setf (http-client-error client)
+          err
+          )))
 
 
 (provide "http-client/api/types")
