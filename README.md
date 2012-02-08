@@ -19,7 +19,7 @@ http-client.api> (setf r (http-get "http://www.google.com/search"
                                    :query '(:hl "ja" :lr "lang_ja" :ie "UTF-8" :oe "Shift_JIS" :num 50
                                             :q "xyzzy 読み方")
                                    :encoding *encoding-utf8n*))
-#S(http-client ready-state :uninitialized uri nil status-code nil status-text nil ...)
+#S(http-client ready-state :loading uri nil status-code nil status-text nil ...)
 
 ;; 結果を取得しようとした時点でレスポンスを待ちます
 http-client.api> (http-request-uri r)
@@ -55,7 +55,7 @@ http-download
 
 http-client.api> (http-download "http://www.jsdlab.co.jp/~kamei/cgi-bin/download.cgi"
                                 "xyzzy-0.2.2.235.lzh")
-#S(http-client ready-state :uninitialized uri nil status-code nil status-text nil ...)
+#S(http-client ready-state :loading uri nil status-code nil status-text nil ...)
 
 ;; receiver に http-buffer-receiver を指定することでレスポンス・ボディをバッファに
 ;; 出力することができます。
@@ -72,6 +72,7 @@ http-client.api> (defun find-uri (uri)
 find-uri
 
 http-client.api> (find-uri "http://goo.gl/bgggL")
+#S(http-client ready-state :loading uri nil status-code nil status-text nil ...)
 ```
 
 

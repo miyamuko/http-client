@@ -376,30 +376,35 @@ http-get などは Future オブジェクトを返します。
 まだリクエストが完了していない場合はブロックします。
 
 以下は Google に検索リクエストを並列に投げる例です。
+並列でリクエストを処理しているため、検索クエリを増やしても
+実行時間はほとんど増えないことに注目してください。
 
 ```lisp
-http-client.api> (let ((queries (mapcar #'(lambda (q)
-                                            ;; http-get などはすぐにリターンする
-                                            (cons q (http-get "http://www.google.co.jp/search"
-                                                              :query `(:q ,q :ie "UTF-8" :oe "Shift_JIS")
-                                                              :encoding *encoding-utf8n*
-                                                              :onprogress #'(lambda (p)
-                                                                              (message "~A: ~A" q p))
-                                                              )))
-                                        '("xyzzy" "Emacs" "Vim" "秀丸" "TeraPad" "notepad"))))
-                   (mapcar #'(lambda (query)
-                               (cons (car query)
-                                     (and (string-match "約 \\([0-9,]+\\) 件"
-                                                        ;; この時点でブロックする
-                                                        (http-response-result (cdr query)))
-                                          (match-string 1))))
-                           queries))
-(("xyzzy" . "1,570,000")
- ("Emacs" . "15,700,000")
- ("Vim" . "159,000,000")
- ("秀丸" . "310,000")
- ("TeraPad" . "876,000")
- ("notepad" . "65,700,000"))
+http-client.api> (defun google-count (keywords)
+                   (let ((queries (mapcar #'(lambda (q)
+                                              ;; http-get などはすぐにリターンする
+                                              (cons q (http-get "http://www.google.co.jp/search"
+                                                                :query `(:q ,q :ie "UTF-8" :oe "Shift_JIS")
+                                                                :encoding *encoding-utf8n*
+                                                                :onprogress #'(lambda (p)
+                                                                                (message "~A: ~A" q p))
+                                                                )))
+                                          keywords)))
+                     (mapcar #'(lambda (query)
+                                 (cons (car query)
+                                       (and (string-match "約 \\([0-9,]+\\) 件"
+                                                          ;; この時点でブロックする
+                                                          (http-response-result (cdr query)))
+                                            (match-string 1))))
+                             queries)))
+
+http-client.api> (google-count '("xyzzy" "Emacs" "Vim"))
+(("xyzzy" . "1,560,000") ("Emacs" . "15,700,000") ("Vim" . "159,000,000"))
+
+http-client.api> (google-count '("xyzzy" "Emacs" "Vim" "秀丸" "TeraPad" "notepad++" "VzEditor"))
+(("xyzzy" . "1,560,000") ("Emacs" . "15,700,000") ("Vim" . "159,000,000")
+ ("秀丸" . "313,000") ("TeraPad" . "876,000") ("notepad++" . "7,280,000")
+ ("VzEditor" . "56,000"))
 ```
 
 
