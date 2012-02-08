@@ -1,5 +1,9 @@
 2012-02-08  MIYAMUKO Katsuyuki
 
+	* リネーム
+	http-request-waiting-p   => http-response-waiting-p
+	http-request-completed-p => http-response-completed-p
+
 	* (http-request, http-response-wait, dispatch-event):
 	- abort しても onabort が呼ばれていなかったのを修正
 	- onabort の引数をなくした

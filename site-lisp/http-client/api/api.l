@@ -49,8 +49,8 @@
           http-response-wait
           ;; request predicates
           http-request-aborted-p
-          http-request-waiting-p
-          http-request-completed-p
+          http-response-waiting-p
+          http-response-completed-p
           ;; request accessors
           http-request-uri
           http-request-header
@@ -211,7 +211,7 @@
 ;;; control functions
 
 (defun http-request-abort (client)
-  (unless (http-request-completed-p client)
+  (unless (http-response-completed-p client)
     (let ((ctx (winhttp:request-context (http-client-request client))))
       (setf (context-aborted-p ctx) t))
     (with-translate-condition
@@ -251,11 +251,11 @@
   (let ((ctx (winhttp:request-context (http-client-request client))))
     (context-aborted-p ctx)))
 
-(defun http-request-waiting-p (client)
+(defun http-response-waiting-p (client)
   (http-client-waiting-p client :complete))
 
-(defun http-request-completed-p (client)
-  (not (http-request-waiting-p client)))
+(defun http-response-completed-p (client)
+  (not (http-response-waiting-p client)))
 
 
 ;;; request accessors

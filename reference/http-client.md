@@ -42,8 +42,8 @@
       * [http-request-abort](#http-request-abort)
       * [http-response-wait](#http-response-wait)
       * [http-request-aborted-p](#http-request-aborted-p)
-      * [http-request-completed-p](#http-request-completed-p)
-      * [http-request-waiting-p](#http-request-waiting-p)
+      * [http-response-completed-p](#http-response-completed-p)
+      * [http-response-waiting-p](#http-response-waiting-p)
     * accessors
       * [http-request-uri](#http-request-uri)
       * [http-request-header](#http-request-header)
@@ -644,7 +644,7 @@ HTTP DELETE リクエストを送信します。
   * [http-response-values](#http-response-values) などで、Future オブジェクトから値を
     取得しようとした時点で、まだリクエストが完了していない場合はブロックします。
   * [http-response-wait](#http-response-wait) で明示的にリクエストの完了を待つことが可能です。
-  * リクエストが完了したかどうかは [http-request-completed-p](#http-request-completed-p)
+  * リクエストが完了したかどうかは [http-response-completed-p](#http-response-completed-p)
     で判断できます。
   * リクエストを停止したい場合は Future オブジェクトを
      [http-request-abort](#http-request-abort) に指定します。
@@ -664,8 +664,8 @@ __See Also:__
   * [http-response-header-alist](#http-response-header-alist)
   * [http-response-result](#http-response-result)
   * [http-response-values](#http-response-values)
-  * [http-request-completed-p](#http-request-completed-p)
-  * [http-request-waiting-p](#http-request-waiting-p)
+  * [http-response-completed-p](#http-response-completed-p)
+  * [http-response-waiting-p](#http-response-waiting-p)
   * [http-request-abort](#http-request-abort)
   * [http-response-wait](#http-response-wait)
 
@@ -992,15 +992,15 @@ __See Also:__
 既に通信が終了していたら何もせず `nil` を返します。
 
 abort 処理は非同期に実行されます。
-abort 呼び出し直後は [http-request-completed-p](#http-request-completed-p) は
+abort 呼び出し直後は [http-response-completed-p](#http-response-completed-p) は
 nil を返します。
 
 ```lisp
 http-client.api> (let ((req (http-get "http://www.google.co.jp/")))
                    (flet ((ping ()
                             (list :aborted-p (http-request-aborted-p req)
-                                  :waiting-p (http-request-waiting-p req)
-                                  :completed-p (http-request-completed-p req))))
+                                  :waiting-p (http-response-waiting-p req)
+                                  :completed-p (http-response-completed-p req))))
                      (values
                       (ping)
                       (http-request-abort req)
@@ -1019,8 +1019,8 @@ __See Also:__
 
   * [http-response-wait](#http-response-wait)
   * [http-request-aborted-p](#http-request-aborted-p)
-  * [http-request-completed-p](#http-request-completed-p)
-  * [http-request-waiting-p](#http-request-waiting-p)
+  * [http-response-completed-p](#http-response-completed-p)
+  * [http-response-waiting-p](#http-response-waiting-p)
 
 
 ### Function: <a name="http-response-wait"><em>http-response-wait</em></a> <i>`CLIENT` &key `:nowait` `:no-redraw` `:sleep` (`:timeout` 30) (`:interval` 0.1) (`:ready-state` :complete) (`:abort-on-quit` t) (`:signal-error` t)</i>
@@ -1080,8 +1080,8 @@ __See Also:__
 
   * [http-request-abort](#http-request-abort)
   * [http-request-aborted-p](#http-request-aborted-p)
-  * [http-request-completed-p](#http-request-completed-p)
-  * [http-request-waiting-p](#http-request-waiting-p)
+  * [http-response-completed-p](#http-response-completed-p)
+  * [http-response-waiting-p](#http-response-waiting-p)
 
 
 ### Function: <a name="http-request-aborted-p"><em>http-request-aborted-p</em></a> <i>`CLIENT`</i>
@@ -1101,11 +1101,11 @@ __See Also:__
 
   * [http-request-abort](#http-request-abort)
   * [http-response-wait](#http-response-wait)
-  * [http-request-completed-p](#http-request-completed-p)
-  * [http-request-waiting-p](#http-request-waiting-p)
+  * [http-response-completed-p](#http-response-completed-p)
+  * [http-response-waiting-p](#http-response-waiting-p)
 
 
-### Function: <a name="http-request-completed-p"><em>http-request-completed-p</em></a> <i>`CLIENT`</i>
+### Function: <a name="http-response-completed-p"><em>http-response-completed-p</em></a> <i>`CLIENT`</i>
 
 指定した `CLIENT` が完了したなら t を返します。
 
@@ -1127,10 +1127,10 @@ __See Also:__
   * [http-request-abort](#http-request-abort)
   * [http-response-wait](#http-response-wait)
   * [http-request-aborted-p](#http-request-aborted-p)
-  * [http-request-waiting-p](#http-request-waiting-p)
+  * [http-response-waiting-p](#http-response-waiting-p)
 
 
-### Function: <a name="http-request-waiting-p"><em>http-request-waiting-p</em></a> <i>`CLIENT`</i>
+### Function: <a name="http-response-waiting-p"><em>http-response-waiting-p</em></a> <i>`CLIENT`</i>
 
 指定した `CLIENT` がまだ処理中なら t を返します。
 
@@ -1148,7 +1148,7 @@ __See Also:__
   * [http-request-abort](#http-request-abort)
   * [http-response-wait](#http-response-wait)
   * [http-request-aborted-p](#http-request-aborted-p)
-  * [http-request-completed-p](#http-request-completed-p)
+  * [http-response-completed-p](#http-response-completed-p)
 
 
 ### Function: <a name="http-request-uri"><em>http-request-uri</em></a> <i>`CLIENT`</i>
