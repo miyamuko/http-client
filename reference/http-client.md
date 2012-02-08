@@ -110,14 +110,15 @@ Accept ヘッダに渡される値のデフォルト値を指定するスペシ�
 
     WinHTTP のデフォルト設定を利用します。
 
-    WinHTTP のプロキシ設定は `netsh` (Vista/2008 以降) または
-    `proxycfg` (XP/2003 以前) コマンドを用いて行います。
+    WinHTTP のプロキシ設定は `netsh.exe` (Vista/2008 以降) または
+    `proxycfg.exe` (XP/2003 以前) コマンドを用いて行います。
 
   * `:ie`
 
     IE のプロキシ設定を利用します。
+
     この場合、プロキシの解決には WPAD (Web Proxy Auto-Discovery)
-     による自動検出および自動構成スクリプトが利用可能になりますが、
+    による自動検出および自動構成スクリプトが利用可能になりますが、
     Ctrl-g が効かない同期処理になるので注意してください。
 
   * 文字列
@@ -132,21 +133,21 @@ Accept ヘッダに渡される値のデフォルト値を指定するスペシ�
 
 ```lisp
 ;; プロキシ名を指定
-(setf *http-proxy* "my.proxy.com")
-(setf *http-proxy* :proxy "my.proxy.com:8080")
+(setf http-client:*http-proxy* "my.proxy.com")
+(setf http-client:*http-proxy* :proxy "my.proxy.com:8080")
 
 ;; プロキシ名とバイパスを指定
-(setf *http-proxy*  '("my.proxy.com:8080" "192.168.*.*"))
+(setf http-client:*http-proxy*  '("my.proxy.com:8080" "192.168.*.*"))
 
 ;; IE のプロキシ設定を利用する
-(setf *http-proxy* :ie)
+(setf http-client:*http-proxy* :ie)
 
 ;; WinHTTP のプロキシ設定を利用する
-(setf *http-proxy* :winhttp)
+(setf http-client:*http-proxy* :winhttp)
 
 ;; proxy を利用しない
-(setf *http-proxy* :no)
-(setf *http-proxy* nil)
+(setf http-client:*http-proxy* :no)
+(setf http-client:*http-proxy* nil)
 ```
 
 __See Also:__
@@ -291,7 +292,7 @@ __See Also:__
   * [http-progress-response-p](#http-progress-response-p)
   * [http-progress-current](#http-progress-current)
   * [http-progress-total](#http-progress-total)
-  * [http-progress-percent]](#http-progress-percent)
+  * [http-progress-percent](#http-progress-percent)
 
 
 ### Accessor: <a name="http-progress-p"><em>http-progress-p</em></a> <i>`X`</i>
@@ -383,11 +384,16 @@ HTTP DELETE リクエストを送信します。
 
 #### 引数
 
-  * `METHOD`: 送信する HTTP メソッドを指定します。
+  * `METHOD`
+    送信する HTTP メソッドを指定します。
 
-  * `URI`: URL を指定します。
+  * `URI`
 
-  * `BODY`: 送信する HTTP レスポンス・ボディを文字列かリストで指定します。
+    URL を指定します。
+
+  * `BODY`
+
+    送信する HTTP レスポンス・ボディを文字列かリストで指定します。
 
     文字列の場合はそのまま送信します。
     リストの場合は multipart/form-data 形式にエンコードして送信します。
@@ -405,21 +411,25 @@ HTTP DELETE リクエストを送信します。
 
     plist には以下のキーワードを指定可能です。
 
-    * `:value`:
-      パラメータの値を指定します。`(name val)` 形式は `(name :value value)` の省略形です。
+    * `:value`
 
-    * `:file`:
-      指定された名前のファイルの中身をパラメータの値として挿入します。
-      ファイルのアップロードに便利です。
-      このオプションは `:value` より優先されます。
+        パラメータの値を指定します。`(name val)` 形式は `(name :value value)` の省略形です。
 
-    * `:content-type`:
-      MIME タイプを指定します。
-      指定が無ければ Content-Type ヘッダは送信されません。
+    * `:file`
 
-    * `:content-transfer-encoding`:
-      送信時のエンコーディングを指定します (binary のみをサポート)。
-      指定が無ければ Content-Transfer-Encoding ヘッダは送信されません。
+        指定された名前のファイルの中身をパラメータの値として挿入します。
+        ファイルのアップロードに便利です。
+        このオプションは `:value` より優先されます。
+
+    * `:content-type`
+
+        MIME タイプを指定します。
+        指定が無ければ Content-Type ヘッダは送信されません。
+
+    * `:content-transfer-encoding`
+
+        送信時のエンコーディングを指定します (binary のみをサポート)。
+        指定が無ければ Content-Transfer-Encoding ヘッダは送信されません。
 
     `:encoding` キーワード引数を指定した場合、
     `name` と `value` はまずその文字エンコーディングに変換されたのちに url エスケープされます。
@@ -433,7 +443,9 @@ HTTP DELETE リクエストを送信します。
                                :headers '(:Accept-Language "en"))
     ```
 
-  * `:query`: URL パラメータを文字列かリストで指定します。
+  * `:query`
+
+    URL パラメータを文字列かリストで指定します。
 
     文字列の場合そのまま `URL` に追加されて送信されます。
     呼び出し側で必要な文字コード変換や url エンコーディングを行う必要があります。
@@ -492,29 +504,30 @@ HTTP DELETE リクエストを送信します。
 
     * `nil` または `:no`
 
-      プロキシサーバを利用しません。
+        プロキシサーバを利用しません。
 
     * `:winhttp`
 
-      WinHTTP のデフォルト設定を利用します。
+        WinHTTP のデフォルト設定を利用します。
 
-      WinHTTP のプロキシ設定は `netsh` (Vista/2008 以降) または
-      `proxycfg` (XP/2003 以前) コマンドを用いて行います。
+        WinHTTP のプロキシ設定は `netsh.exe` (Vista/2008 以降) または
+        `proxycfg.exe` (XP/2003 以前) コマンドを用いて行います。
 
     * `:ie`
 
-      IE のプロキシ設定を利用します。
-      この場合、プロキシの解決には WPAD (Web Proxy Auto-Discovery)
-       による自動検出および自動構成スクリプトが利用可能になりますが、
-      Ctrl-g が効かない同期処理になるので注意してください。
+        IE のプロキシ設定を利用します。
+
+        この場合、プロキシの解決には WPAD (Web Proxy Auto-Discovery)
+        による自動検出および自動構成スクリプトが利用可能になりますが、
+        Ctrl-g が効かない同期処理になるので注意してください。
 
     * 文字列
 
-      指定されたプロキシサーバを利用します。
+        指定されたプロキシサーバを利用します。
 
     * リスト
 
-      指定されたプロキシサーバとバイパスリストを利用します。
+        指定されたプロキシサーバとバイパスリストを利用します。
 
     何も指定しなかった場合は、[\*http-proxy\*](#*http-proxy*) の設定に従います。
 
@@ -551,7 +564,7 @@ HTTP DELETE リクエストを送信します。
     レスポンス・ヘッダを受信し終わると、`:receiver` を
     ステータスコード、レスポンス・ヘッダ、Content-Length を指定して呼び出します。
 
-    レスポンス・ボディを受信すると、`:receiver` が返した関数を受信したメッセージ？ボディを
+    レスポンス・ボディを受信すると、`:receiver` が返した関数を受信したメッセージ・ボディを
     指定して呼び出します。
 
     レスポンス・ボディの終端に到達すると、`:receiver` が返した関数に `nil` を指定して呼び出します。
@@ -576,30 +589,51 @@ HTTP DELETE リクエストを送信します。
 
   * `:onprogress`, `:oncomplete`, `:onabort`, `:onerror`
 
-    `:oncomplete` には 4 引数を取る手続きを、`:onprogress`、`:onabort` および `:onerror`
-    には 1 引数を取る関数を指定してください。
-
     `nil` を指定した場合は何も呼び出されません。
 
-    * `:onprogress`: リクエスト・ボディの送信中またはレスポンス・ボディの受信中に
-      呼び出されます。引数は [http-progress](#http-progress) オブジェクトです。
+    * `:onprogress`
 
-      ```lisp
-      http-client.api> (http-get "http://www.google.co.jp/"
-                                 :onprogress #'(lambda (progress)
-                                                 (message "~A" progress)))
-      ```
+        リクエスト・ボディの送信中またはレスポンス・ボディの受信中に
+        呼び出されます。引数は [http-progress](#http-progress) オブジェクトです。
+  
+        ```lisp
+        http-client.api> (http-get "http://www.google.co.jp/"
+                                   :onprogress #'(lambda (progress)
+                                                   (message "~A" progress)))
+        ```
 
-    * `:oncomplete`: リクエストが完了した場合に呼び出されます。
-      引数は レスポンス・ボディ、ステータスコード、レスポンス・ヘッダ、URL です。
-      URL はリダイレクト後の URL であるため、`URI` で指定した URL と違う場合があります。
+    * `:oncomplete`
 
-    * `:onabort`: リクエスト中断時に呼び出されます。
-      引数はコンディションです。
+        リクエストが完了した場合に呼び出されます。
 
-    * `:onerror`: エラー発生時に呼び出されます。
-      引数はコンディションです。
+        引数は レスポンス・ボディ、ステータスコード、レスポンス・ヘッダ、URL です。
+        URL はリダイレクト後の URL であるため、`URI` で指定した URL と違う場合があります。
 
+    * `:onabort`
+
+        リクエスト中断時に呼び出されます。
+        引数はコンディションです。
+
+    * `:onerror`
+
+        エラー発生時に呼び出されます。
+        引数はありません。
+
+    ```lisp
+    http-client.api> (let ((client (http-get "http://www.jsdlab.co.jp/~kamei/cgi-bin/download.cgi"
+                                             :receiver (http-file-receiver "c:/xyzzy.lzh")
+                                             :onprogress #'(lambda (p)
+                                                             (message "~A" p))
+                                             :oncomplete #'(lambda (localfile status header uri)
+                                                             (msgbox "ダウンロード完了~%URL: ~A~%File: ~A" uri localfile))
+                                             :onerror #'(lambda (err)
+                                                          (msgbox "Error: ~A" err))
+                                             :onabort #'(lambda ()
+                                                          (msgbox "Abort"))
+                                             )))
+                       (unless (http-response-wait client :timeout 3)
+                         (http-request-abort client)))
+    ```
 
 #### 戻り値
 
@@ -724,15 +758,21 @@ __See Also:__
   * [http-response-result](#http-response-result) はファイルのフルパスを文字列で返します。
 
 ```lisp
-(defun http-download (uri localfile)
-  (http-get uri
-            :receiver (http-file-receiver localfile)
-            :oncomplete #'(lambda (fullpath status headers uri)
-                            (msgbox "Download OK~%URL: ~A~%File: ~A"
-                                    uri fullpath))
-            :onerror #'(lambda (err) (msgbox "Error: ~A" err))
-            :onabort #'(lambda (err) (msgbox "Abort: ~A" err))
-            ))
+http-client.api> (http-response-values
+                  (http-get "http://www.jsdlab.co.jp/~kamei/cgi-bin/download.cgi"
+                            :receiver (http-file-receiver "c:/xyzzy.lzh")
+                            :onprogress #'(lambda (p) (message "~A" p))
+                            :onerror #'(lambda (err) (msgbox "Error: ~A" err))
+                            :onabort #'(lambda () (msgbox "Abort"))
+                            ))
+"c:/xyzzy.lzh"
+200
+(("Date" . "Tue, 07 Feb 2012 23:37:12 GMT")
+ ("Server" . "Apache/2.0")
+ ("Last-Modified" . "Wed, 07 Dec 2005 16:28:21 GMT")
+ ...
+ )
+"http://www.mars.dti.ne.jp/~t-kamei/xyzzy/xyzzy-0.2.2.235.lzh"
 ```
 
 __See Also:__
@@ -769,7 +809,7 @@ http-client.api> (http-response-values
                                             (pop-to-buffer buffer)
                                             (refresh-screen))
                             :onerror #'(lambda (err) (msgbox "Error: ~A" err))
-                            :onabort #'(lambda (err) (msgbox "Abort: ~A" err))
+                            :onabort #'(lambda () (msgbox "Abort"))
                             ))
 #<buffer: baidu>
 200
@@ -824,6 +864,8 @@ __See Also:__
 
 レスポンス・ボディを読み捨てるための receiver です。
 
+[http-response-result](#http-response-result) は `nil` を返します。
+
 __See Also:__
 
   * [http-request](#http-request)
@@ -868,15 +910,11 @@ http-client.api> (defun chunk-size (url &key line)
                                                   :line line))))
                      (http-response-result r)))
 
-http-client.api> (setf a (chunk-size "http://www.jsdlab.co.jp/~kamei/" :line t))
-(9 10 81 8 9 23 85 21 69 19 102 19 54 ...)
+http-client.api> (chunk-size "http://www.jsdlab.co.jp/~kamei/" :line t)
+(8 9 81 7 8 22 84 20 68 18 101 18 53 20 64 20 55 19 79 24 68 18 95 ...)
 
-http-client.api> (setf b (chunk-size "http://www.jsdlab.co.jp/~kamei/"))
-(2502 579)
-
-http-client.api> (values (apply #'+ a) (apply #'+ b))
-3081 ;
-3081
+http-client.api> (chunk-size "http://www.jsdlab.co.jp/~kamei/")
+(2510 574)
 ```
 
 __See Also:__
@@ -953,19 +991,28 @@ __See Also:__
 通信を中断したなら t を返します。
 既に通信が終了していたら何もせず `nil` を返します。
 
+abort 処理は非同期に実行されます。
+abort 呼び出し直後は [http-request-completed-p](#http-request-completed-p) は
+nil を返します。
+
 ```lisp
-http-client.api> (let ((req (http-get "www.google.co.jp" "/" :async t)))
-                   (values
-                    (list (http-request-aborted-p req)
-                          (http-request-waiting-p req)
-                          (http-request-completed-p req))
-                    (http-request-abort req)
-                    (list (http-request-aborted-p req)
-                          (http-request-waiting-p req)
-                          (http-request-completed-p req))))
-(nil t nil) ;
+http-client.api> (let ((req (http-get "http://www.google.co.jp/")))
+                   (flet ((ping ()
+                            (list :aborted-p (http-request-aborted-p req)
+                                  :waiting-p (http-request-waiting-p req)
+                                  :completed-p (http-request-completed-p req))))
+                     (values
+                      (ping)
+                      (http-request-abort req)
+                      (ping)
+                      (http-response-wait req)
+                      (ping)
+                      )))
+(:aborted-p nil :waiting-p t :completed-p nil) ;
 t ;
-(t nil t)
+(:aborted-p t :waiting-p t :completed-p nil) ;
+t ;
+(:aborted-p t :waiting-p nil :completed-p t)
 ```
 
 __See Also:__
@@ -1063,6 +1110,7 @@ __See Also:__
 指定した `CLIENT` が完了したなら t を返します。
 
   * リクエストを [abort した場合](#http-request-abort) でも t を返します。
+  * リクエストを abort した直後は nil を返します。abort 処理が完了すると t を返します。
   * リクエストが完了したか abort したかは、[http-request-aborted-p](#http-request-aborted-p) で区別します。
 
 引数には以下の関数の戻り値を指定可能です。
@@ -1218,6 +1266,7 @@ __See Also:__
 http-client.api> (http-response-values
                   (http-get "http://www.google.co.jp/"))
 "<!doctype html>
+  ...
 </script>"
 200
 (("Cache-Control" . "private, max-age=0") ("Date" . "Thu, 02 Feb 2012 12:44:32 GMT") ...)

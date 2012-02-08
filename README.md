@@ -94,6 +94,11 @@ Proxy、Basic/Digest 認証、SSL、Cookie、非同期通信などをサポー�
     * IE とは別にプロキシを WinHTTP で設定しておく必要がある
     * IE とセッションが分離されているので、自前でログイン処理などを実装する必要がある
     * クッキーは xyzzy を再起動するとすべて消える
+    * 認証情報は毎回指定する必要がある
+      - 自動的に認証ダイアログがでない
+      - 認証情報のキャッシュは行わない
+    * 圧縮転送に対応していない (Content-Encoding: gzip)
+    * 受信処理を xyzzy Lisp で行うため若干遅い
 
   [xl-winhttp]: http://miyamuko.s56.xrea.com/xyzzy/xl-winhttp/intro.htm
   [xml-http-request]: http://miyamuko.s56.xrea.com/xyzzy/xml-http-request/intro.htm
