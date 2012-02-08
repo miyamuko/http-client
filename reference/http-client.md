@@ -1488,5 +1488,5 @@ __See Also:__
 
 ```lisp
 http-client.api> (http-client-version)
-"0.0.1"
+"1.0.0"
 ```

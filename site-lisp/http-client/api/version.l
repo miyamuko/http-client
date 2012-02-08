@@ -32,7 +32,7 @@
 (export '(http-client-version
           ))
 
-(defconstant +http-client-version+ "0.0.1")
+(defconstant +http-client-version+ "1.0.0")
 
 (defun http-client-version ()
   +http-client-version+)

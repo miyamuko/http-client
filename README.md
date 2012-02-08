@@ -1,7 +1,7 @@
 # http-client - HTTP クライアント
 
 * Home URL: http://miyamuko.s56.xrea.com/xyzzy/http-client/intro.htm
-* Version: 0.0.1
+* Version: 1.0.0
 
 
 ## SYNOPSIS
