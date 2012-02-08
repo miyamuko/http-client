@@ -349,6 +349,59 @@ HTTP GET リクエストを送信します。
 
 詳細は [http-request](#http-request) を参照してください。
 
+```lisp
+http-client.api> (http-response-values
+                  (http-get "http://www.google.co.jp/search"
+                            :query '(:q "xyzzy 読み方" :ie "UTF-8" :oe "Shift_JIS")
+                            :encoding *encoding-utf8n*
+                            :headers '(:User-Agent "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Win64; x64; Trident/5.0) ")
+                            :onprogress #'(lambda (p) (message "~A" p))
+                            :onerror #'(lambda (err) (msgbox "Error: ~A" err))
+                            :onabort #'(lambda () (msgbox "Abort"))
+                            ))
+"<!doctype html>
+...
+"
+200
+(("Cache-Control" . "private, max-age=0")
+ ("Date" . "Wed, 08 Feb 2012 05:13:44 GMT")
+ ("Transfer-Encoding" . "chunked")
+ ...)
+"http://www.google.co.jp/search?q=xyzzy%20%E8%AA%AD%E3%81%BF%E6%96%B9&ie=UTF-8&oe=Shift_JIS"
+```
+
+http-get などは Future オブジェクトを返します。
+
+[http-response-result](#http-response-result) などで値を取得しようとした時点で
+まだリクエストが完了していない場合はブロックします。
+
+以下は Google に検索リクエストを並列に投げる例です。
+
+```lisp
+http-client.api> (let ((queries (mapcar #'(lambda (q)
+                                            ;; http-get などはすぐにリターンする
+                                            (cons q (http-get "http://www.google.co.jp/search"
+                                                              :query `(:q ,q :ie "UTF-8" :oe "Shift_JIS")
+                                                              :encoding *encoding-utf8n*
+                                                              :onprogress #'(lambda (p)
+                                                                              (message "~A: ~A" q p))
+                                                              )))
+                                        '("xyzzy" "Emacs" "Vim" "秀丸" "TeraPad" "notepad"))))
+                   (mapcar #'(lambda (query)
+                               (cons (car query)
+                                     (and (string-match "約 \\([0-9,]+\\) 件"
+                                                        ;; この時点でブロックする
+                                                        (http-response-result (cdr query)))
+                                          (match-string 1))))
+                           queries))
+(("xyzzy" . "1,570,000")
+ ("Emacs" . "15,700,000")
+ ("Vim" . "159,000,000")
+ ("秀丸" . "310,000")
+ ("TeraPad" . "876,000")
+ ("notepad" . "65,700,000"))
+```
+
 
 ### Function: <a name="http-head"><em>http-head</em></a> <i>`URI` &key `:headers` `:query` `:encoding` `:auth` `:proxy-auth` `:proxy` `:no-redirect` `:receiver` `:wait` `:onprogress` `:oncomplete` `:onabort` `:onerror`</i>
 
@@ -356,12 +409,47 @@ HTTP HEAD リクエストを送信します。
 
 詳細は [http-request](#http-request) を参照してください。
 
+```lisp
+http-client.api> (let ((client (http-head "http://www.jsdlab.co.jp/~kamei/cgi-bin/download.cgi"
+                                          :onprogress #'(lambda (p) (message "~A" p))
+                                          :onerror #'(lambda (err) (msgbox "Error: ~A" err))
+                                          :onabort #'(lambda () (msgbox "Abort"))
+                                          )))
+                   (http-response-header client :last-modified))
+"Wed, 07 Dec 2005 16:28:21 GMT"
+```
+
 
 ### Function: <a name="http-post"><em>http-post</em></a> <i>`URI` `BODY` &key `:headers` `:query` `:encoding` `:auth` `:proxy-auth` `:proxy` `:no-redirect` `:receiver` `:wait` `:onprogress` `:oncomplete` `:onabort` `:onerror`</i>
 
 HTTP POST リクエストを送信します。
 
 詳細は [http-request](#http-request) を参照してください。
+
+```lisp
+http-client.api> (setf *hatena-name* "miyamuko")
+"miyamuko"
+
+http-client.api> (setf *hatena-password* "xxx")
+"xxx"
+
+http-client.api> (http-response-values
+                  (http-post "https://www.hatena.ne.jp/login"
+                             `(:name ,*hatena-name* :password ,*hatena-password*)
+                             :onprogress #'(lambda (p) (message "~A" p))
+                             :onerror #'(lambda (err) (msgbox "Error: ~A" err))
+                             :onabort #'(lambda () (msgbox "Abort"))
+                             ))
+"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">
+ ...
+"
+200
+(("Cache-Control" . "no-cache")
+ ("Connection" . "Keep-Alive")
+ ("Date" . "Wed, 08 Feb 2012 05:17:48 GMT")
+ ...)
+"https://www.hatena.ne.jp/login"
+```
 
 
 ### Function: <a name="http-put"><em>http-put</em></a> <i>`URI` `BODY` &key `:headers` `:query` `:encoding` `:auth` `:proxy-auth` `:proxy` `:no-redirect` `:receiver` `:wait` `:onprogress` `:oncomplete` `:onabort` `:onerror`</i>
@@ -385,6 +473,7 @@ HTTP DELETE リクエストを送信します。
 #### 引数
 
   * `METHOD`
+
     送信する HTTP メソッドを指定します。
 
   * `URI`
@@ -647,7 +736,7 @@ HTTP DELETE リクエストを送信します。
   * リクエストが完了したかどうかは [http-response-completed-p](#http-response-completed-p)
     で判断できます。
   * リクエストを停止したい場合は Future オブジェクトを
-     [http-request-abort](#http-request-abort) に指定します。
+    [http-request-abort](#http-request-abort) に指定します。
 
 __See Also:__
 
@@ -1248,9 +1337,10 @@ __See Also:__
   * [http-string-receiver](#http-string-receiver)
   * [http-file-receiver](#http-file-receiver)
   * [http-buffer-receiver](#http-buffer-receiver)
-  * [http-stream-chunk-receiver](#http-stream-chunk-receiver)
-  * [http-stream-line-receiver](#http-stream-line-receiver)
+  * [http-oport-receiver](#http-oport-receiver)
   * [http-null-receiver](#http-null-receiver)
+  * [http-general-receiver](#http-general-receiver)
+  * [http-cond-receiver](#http-cond-receiver)
 
 
 ### Function: <a name="http-response-values"><em>http-response-values</em></a> <i>`CLIENT`</i>
