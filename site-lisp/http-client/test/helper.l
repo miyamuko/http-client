@@ -57,15 +57,7 @@
 
 (defun bin (str)
   (when str
-    (map 'string 'code-char
-         (mapcan #'(lambda (code)
-                     (let (r)
-                       (loop
-                         (push (logand #xff code) r)
-                         (setf code (ash code -8))
-                         (when (zerop code)
-                           (return r)))))
-                 (map 'list 'char-code str)))))
+    (convert-encoding-to-internal *encoding-binary* str)))
 
 (defun md5-file (file)
   (with-open-file (s file :direction :input :encoding :binary)
